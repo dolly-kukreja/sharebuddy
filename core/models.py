@@ -11,6 +11,7 @@ from django.db.models import (
     DateField,
     ForeignKey,
     DateTimeField,
+    DecimalField,
 )
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -19,7 +20,12 @@ from django.contrib.auth.models import (
 )
 from datetime import datetime
 from django_extensions.db.fields import CreationDateTimeField, ModificationDateTimeField
-from core.constants import OTPKeyNameTypes, FriendRequestStatus
+from core.constants import (
+    OTPKeyNameTypes,
+    FriendRequestStatus,
+    ProductCategories,
+    ProductSharingTypes,
+)
 
 # Create your models here.
 
@@ -72,6 +78,12 @@ def get_profile_photo_filepath_with_name(instance, name):
     date = datetime.strftime(datetime.now(), "%Y_%m_%d_%H_%M_%S")
     ext = name.split(".")[-1]
     return "profile_photo/" + date + instance.user_id + "." + ext
+
+
+def get_product_photo_filepath_with_name(instance, name):
+    date = datetime.strftime(datetime.now(), "%Y_%m_%d_%H_%M_%S")
+    ext = name.split(".")[-1]
+    return "product_photo/" + date + instance.product_id + "." + ext
 
 
 # CUSTOM USER
@@ -162,11 +174,68 @@ class FriendRequestModel(Model):
     status_choices = (
         (FriendRequestStatus.ACCEPT, "Accept"),
         (FriendRequestStatus.REJECT, "Reject"),
-        (FriendRequestStatus.PENDING, "Pending")
+        (FriendRequestStatus.PENDING, "Pending"),
     )
-    sender_id = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sender_id")
-    receiver_id = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="receiver_id")
-    status = CharField(max_length=100, null=True, blank=True, choices=status_choices, default=FriendRequestStatus.PENDING)
+    sender_id = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="sender_id"
+    )
+    receiver_id = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="receiver_id"
+    )
+    status = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=status_choices,
+        default=FriendRequestStatus.PENDING,
+    )
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
 
+
+class Product(models.Model):
+    category_choices = (
+        (ProductCategories.CLOTH, "Cloth"),
+        (ProductCategories.ELECTRONIC, "Electronic"),
+        (ProductCategories.FOOTWEAR, "FootWear"),
+        (ProductCategories.ACCESSORIES, "Accesssories"),
+    )
+    sharing_types_choices = (
+        (ProductSharingTypes.SELL, "Sell"),
+        (ProductSharingTypes.RENT, "Rent"),
+        (ProductSharingTypes.SHARE, "Share"),
+    )
+    product_id = CharField(
+        primary_key=True,
+        max_length=255,
+        editable=False,
+        default=generate_user_id,
+        unique=True,
+        null=False,
+    )
+    user = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_product")
+    category = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=category_choices,
+        default=ProductCategories.CLOTH,
+    )
+    name = CharField(max_length=100, null=False, blank=False)
+    description = CharField(max_length=300)
+    photo = ImageField(
+        null=True, blank=True, upload_to=get_product_photo_filepath_with_name
+    )
+    price = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    ratings = IntegerField(default=2)
+    is_available = BooleanField(default=True)
+    is_active = BooleanField(default=False)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+    # sharing_type = CharField(
+    #     max_length=100,
+    #     null=True,
+    #     blank=True,
+    #     choices=sharing_types_choices,
+    #     default=ProductSharingTypes.SHARE,
+    # )
