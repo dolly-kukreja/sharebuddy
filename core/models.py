@@ -19,7 +19,7 @@ from django.contrib.auth.models import (
 )
 from datetime import datetime
 from django_extensions.db.fields import CreationDateTimeField, ModificationDateTimeField
-from core.constants import OTPKeyNameTypes
+from core.constants import OTPKeyNameTypes, FriendRequestStatus
 
 # Create your models here.
 
@@ -155,3 +155,18 @@ class OneTimePassword(Model):
 
     def __str__(self):
         return str(self.key_name) + "-" + str(self.key_value)
+
+
+# friend request model
+class FriendRequestModel(Model):
+    status_choices = (
+        (FriendRequestStatus.ACCEPT, "Accept"),
+        (FriendRequestStatus.REJECT, "Reject"),
+        (FriendRequestStatus.PENDING, "Pending")
+    )
+    sender_id = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sender_id")
+    receiver_id = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="receiver_id")
+    status = CharField(max_length=100, null=True, blank=True, choices=status_choices, default=FriendRequestStatus.PENDING)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
