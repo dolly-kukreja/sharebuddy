@@ -1,0 +1,5 @@
+django-extensions
+django
+djangorestframework
+twilio
+djangorestframework-simplejwt
