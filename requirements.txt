@@ -3,3 +3,5 @@ django
 djangorestframework
 twilio
 djangorestframework-simplejwt
+Pillow
+python-dateutil
