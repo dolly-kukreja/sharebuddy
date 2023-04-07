@@ -21,3 +21,9 @@ EMAIL_SENDER = "sharebuddy3@gmail.com"
 class OTPKeyNameTypes:
     EMAIL = 1
     MOBILE = 2
+
+
+class FriendRequestStatus:
+    PENDING = 1
+    ACCEPT = 2
+    REJECT = 3
