@@ -5,6 +5,7 @@ from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.repositories.customuser import CustomUserRepository
 from django.contrib.auth.decorators import login_required
 from core.serializers.root_serializers import CustomUserSerializer
+from django.contrib.auth import authenticate
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,9 +43,17 @@ class CustomUserController:
         if password != confirm_password:
             return BadRequestJSONResponse(message="Passwords does not match.")
 
-        if len(password) < 8 or not password.isalnum():
+        if len(password) < 8:
             return BadRequestJSONResponse(
-                message="Invalid Password. Password should be greater than 8 digits and should contain atleast one character and atleast one number."
+                message="Invalid Password. Password should be greater than 8 digits."
+            )
+
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$"
+        pat = re.compile(reg)
+        mat = re.search(pat, password)
+        if not mat:
+            return BadRequestJSONResponse(
+                "Password should contain one numeric, one upper character and one special character."
             )
 
         success, response = CustomUserRepository.create_user(
@@ -111,3 +120,57 @@ class CustomUserController:
     def get_user_details(request):
         user = request.user
         return SuccessJSONResponse(CustomUserSerializer(user).data)
+
+    @staticmethod
+    @api_view(["GET"])
+    @login_required
+    def get_user_profile(request):
+        user_id = request.GET.get("user_id")
+        success, response = CustomUserRepository.get_user_profile(user_id)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["GET"])
+    @login_required
+    def get_all_users(request):
+        success, response = CustomUserRepository.get_all_users()
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def change_password(request):
+        user = request.user
+        post_data = request.data
+        old_password = post_data.get("old_password")
+        new_password = post_data.get("new_password")
+        confirm_password = post_data.get("confirm_password")
+
+        authentication = authenticate(username=user.email, password=old_password)
+        if not authentication:
+            return BadRequestJSONResponse(message="Incorrect Password.")
+
+        if new_password != confirm_password:
+            return BadRequestJSONResponse(message="Passwords does not match.")
+
+        if len(new_password) < 8:
+            return BadRequestJSONResponse(
+                message="Invalid Password. Password should be greater than 8 digits."
+            )
+
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$"
+        pat = re.compile(reg)
+        mat = re.search(pat, new_password)
+        if not mat:
+            return BadRequestJSONResponse(
+                "Password should contain one numeric, one upper character and one special character."
+            )
+
+        success, response = CustomUserRepository.change_password(user, new_password)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
