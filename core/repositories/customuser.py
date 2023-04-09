@@ -1,9 +1,11 @@
 import re
 import logging
 from django.db.models import QuerySet
+from core.helpers.query_search import get_or_none
 from core.models import CustomUser
 from datetime import datetime
 from django.contrib.auth import authenticate, login
+from core.serializers.root_serializers import CustomUserSerializer
 from core.serializers.tokenserializers import get_token_pair
 from core.repositories.otp import OneTimePasswordRepository
 from core.helpers.decorators import handle_unknown_exception
@@ -124,3 +126,20 @@ class CustomUserRepository:
             user.mobile_number = mobile_number
         user.save()
         return True, "Email Mobile Updated successfully."
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def get_user_profile(user_id):
+        print("Check user id: ", user_id)
+        user = get_or_none(CustomUser, user_id=user_id)
+        if not user:
+            return False, "Invalid User ID."
+        user_details = CustomUserSerializer(user).data
+        return True, user_details
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def get_all_users():
+        all_users = CustomUser.objects.all()
+        user_details = CustomUserSerializer(all_users, many=True).data
+        return True, user_details

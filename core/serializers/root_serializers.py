@@ -1,6 +1,6 @@
 from typing import Any
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from core.models import CustomUser, Address, OneTimePassword
+from core.models import CustomUser, Address, Product
 
 
 class CustomUserSerializer(ModelSerializer):
@@ -54,4 +54,25 @@ class AddressSerializer(ModelSerializer):
             "country",
             "landmark",
             "pincode",
+        )
+
+
+class ProductSerializer(ModelSerializer):
+    """
+    Serialize Product Model
+    """
+
+    class Meta:
+        model = Product
+        fields = (
+            "product_id",
+            "category",
+            "name",
+            "description",
+            "price",
+            "ratings",
+            "is_available",
+            "is_active",
+            "created_date",
+            "updated_date",
         )

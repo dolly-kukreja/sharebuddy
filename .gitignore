@@ -1,2 +1,45 @@
 *.pyc
 venv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+media/
+
+.idea/
+
+# Distribution / packaging
+.Python
+env/
+build/
+dist/
+downloads/
+lib/
+lib64/
+
+# Django stuff:
+*.log
+local_settings.py
+
+# PyBuilder
+target/
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# dotenv
+.env
+
+# virtualenv
+.venv/
+venv/
+ENV/
+
+# Database stuff
+*.sqlite3
+migrations/
+db.sqlite3
