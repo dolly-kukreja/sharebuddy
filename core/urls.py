@@ -4,7 +4,7 @@ from core.views import (
     OneTimePasswordController,
     AddressController,
     FriendRequestController,
-    ProductController
+    ProductController,
 )
 
 urlpatterns = [
@@ -114,10 +114,5 @@ urlpatterns = [
         "view_friend_request",
         FriendRequestController.view_friend_request,
         name="view_friend_request",
-    ),
-    path(
-        "view_friends",
-        FriendRequestController.view_friends,
-        name="view_friends",
     ),
 ]
