@@ -1,7 +1,8 @@
+from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view
+
 from core.constants import ProductCategories
 from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
-from rest_framework.decorators import api_view
-from django.contrib.auth.decorators import login_required
 from core.models import Product
 from core.repositories.product import ProductRepository
 from core.serializers.root_serializers import ProductSerializer

@@ -1,14 +1,16 @@
-import re
 import logging
+import re
+from datetime import datetime
+
+from django.contrib.auth import authenticate, login
 from django.db.models import QuerySet
+
+from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
 from core.models import CustomUser
-from datetime import datetime
-from django.contrib.auth import authenticate, login
+from core.repositories.otp import OneTimePasswordRepository
 from core.serializers.root_serializers import CustomUserSerializer
 from core.serializers.tokenserializers import get_token_pair
-from core.repositories.otp import OneTimePasswordRepository
-from core.helpers.decorators import handle_unknown_exception
 
 LOGGER = logging.getLogger(__name__)
 

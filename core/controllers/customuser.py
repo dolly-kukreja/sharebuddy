@@ -1,11 +1,13 @@
 import logging
 import re
+
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
+
 from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.repositories.customuser import CustomUserRepository
-from django.contrib.auth.decorators import login_required
 from core.serializers.root_serializers import CustomUserSerializer
-from django.contrib.auth import authenticate
 
 LOGGER = logging.getLogger(__name__)
 

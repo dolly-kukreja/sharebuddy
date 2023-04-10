@@ -1,7 +1,7 @@
-from rest_framework.decorators import api_view
-from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
-
 from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view
+
+from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.models import CustomUser
 from core.repositories.otp import OneTimePasswordRepository
 
