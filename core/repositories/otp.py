@@ -52,7 +52,7 @@ class OneTimePasswordRepository:
     def send_sms_otp(user):
         mobile_number = user.mobile_number
         code = random_string_generator(length=6, alphabets=True)
-        message = f"{code} is your email verification code."
+        message = f"{code} is your mobile verification code."
         expiry_date = timezone.now() + relativedelta(minutes=10)
         otp = OneTimePassword.objects.create(
             key_name=OTPKeyNameTypes.MOBILE,

@@ -58,8 +58,8 @@ class CustomUserRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def login_user(request, username, password):
-        authentication = authenticate(username=username, password=password)
+    def login_user(request, email, password):
+        authentication = authenticate(username=email, password=password)
         if authentication is None:
             return False, "Invalid credentials."
         login(request, authentication)
