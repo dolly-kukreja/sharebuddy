@@ -88,11 +88,11 @@ class CustomUserController:
     @api_view(["POST"])
     def login_user(request):
         post_data = request.data
-        username = post_data.get("username")
+        email = post_data.get("email")
         password = post_data.get("password")
-        if not username or not password:
+        if not email or not password:
             return BadRequestJSONResponse(message="Invalid Params")
-        success, response = CustomUserRepository.login_user(request, username, password)
+        success, response = CustomUserRepository.login_user(request, email, password)
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

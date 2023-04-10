@@ -69,7 +69,7 @@ class CustomUserManager(BaseUserManager):
 
 def generate_user_id():
     user_id = "".join(
-        [random.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZ") for i in range(11)]
+        [random.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZ") for i in range(10)]
     )
     return user_id
 
@@ -112,6 +112,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELD = ["email"]
     objects = CustomUserManager()
+
+    @property
+    def full_name(self):
+        full_name = self.first_name
+        if self.last_name:
+            full_name = f"{full_name} {self.last_name}"
+        return full_name
 
     def __str__(
         self,

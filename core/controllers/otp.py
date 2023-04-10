@@ -29,7 +29,6 @@ class OneTimePasswordController:
 
     @staticmethod
     @api_view(["POST"])
-    @login_required
     def verify_email_otp(request):
         user = request.user
         if request.user.is_anonymous:
@@ -49,7 +48,6 @@ class OneTimePasswordController:
 
     @staticmethod
     @api_view(["POST"])
-    @login_required
     def verify_sms_otp(request):
         user = request.user
         if request.user.is_anonymous:

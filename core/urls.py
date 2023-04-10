@@ -3,7 +3,8 @@ from core.views import (
     CustomUserController,
     OneTimePasswordController,
     AddressController,
-    ProductController,
+    FriendRequestController,
+    ProductController
 )
 
 urlpatterns = [
@@ -98,5 +99,25 @@ urlpatterns = [
         "delete_product",
         ProductController.delete_product,
         name="delete_product",
+    ),
+    path(
+        "send_request",
+        FriendRequestController.send_request,
+        name="send_request",
+    ),
+    path(
+        "action_on_friend_request",
+        FriendRequestController.action_on_friend_request,
+        name="action_on_friend_request",
+    ),
+    path(
+        "view_friend_request",
+        FriendRequestController.view_friend_request,
+        name="view_friend_request",
+    ),
+    path(
+        "view_friends",
+        FriendRequestController.view_friends,
+        name="view_friends",
     ),
 ]
