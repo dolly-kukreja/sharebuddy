@@ -6,9 +6,9 @@ class ProductCategories:
 
 
 class ProductSharingTypes:
-    SELL = "SELL"
     SHARE = "SHARE"
     RENT = "RENT"
+    DEPOSIT = "DEPOSIT"
 
 
 class RequestContentTypes:

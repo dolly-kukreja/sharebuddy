@@ -12,6 +12,7 @@ from django.db.models import (
     ForeignKey,
     DateTimeField,
     DecimalField,
+    JSONField,
 )
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -239,10 +240,40 @@ class Product(models.Model):
     is_active = BooleanField(default=False)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
-    # sharing_type = CharField(
-    #     max_length=100,
-    #     null=True,
-    #     blank=True,
-    #     choices=sharing_types_choices,
-    #     default=ProductSharingTypes.SHARE,
-    # )
+
+
+class Quote(models.Model):
+    sharing_types_choices = (
+        (ProductSharingTypes.RENT, "Rent"),
+        (ProductSharingTypes.SHARE, "Share"),
+        (ProductSharingTypes.DEPOSIT, "Deposit"),
+    )
+    product = ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="quote_product"
+    )
+    owner = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="product_owner"
+    )
+    customer = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="product_customer"
+    )
+    last_updated_by = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="last_updated_by"
+    )
+    exchange_type = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=sharing_types_choices,
+        default=ProductSharingTypes.RENT,
+    )
+    rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    deposit_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    approved_by_owner = BooleanField(default=False)
+    approved_by_customer = BooleanField(default=False)
+    updated_count = IntegerField(default=0)
+    type_change_history = JSONField(blank=True, null=True)
+    remarks = JSONField(blank=True, null=True)
+    last_updated_at = DateTimeField(null=True, blank=True)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
