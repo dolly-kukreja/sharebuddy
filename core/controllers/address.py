@@ -1,7 +1,8 @@
+from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
+
 from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.repositories.address import AddressRepository
-from django.contrib.auth.decorators import login_required
 
 
 class AddressController:

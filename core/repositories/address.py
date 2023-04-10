@@ -1,8 +1,10 @@
 import logging
-from core.helpers.query_search import get_or_create
-from core.helpers.decorators import handle_unknown_exception
-from core.models import Address
+
 from django.db.models import QuerySet
+
+from core.helpers.decorators import handle_unknown_exception
+from core.helpers.query_search import get_or_create
+from core.models import Address
 from core.serializers.root_serializers import AddressSerializer
 
 LOGGER = logging.getLogger(__name__)
