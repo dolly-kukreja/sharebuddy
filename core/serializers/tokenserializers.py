@@ -10,7 +10,7 @@ class CustomObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims
         token["mobile_number"] = user.mobile_number
         token["email"] = user.email
-        # token["user_id"] = user.user_id
+        token["custom_user_id"] = user.user_id
         return token
 
 

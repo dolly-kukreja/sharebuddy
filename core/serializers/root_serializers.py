@@ -62,13 +62,23 @@ class ProductSerializer(ModelSerializer):
     Serialize Product Model
     """
 
+    user_id = SerializerMethodField()
+
+    def get_user_id(self, product: Product) -> Any:
+        """
+        Get user id
+        """
+        return product.user.user_id
+
     class Meta:
         model = Product
         fields = (
             "product_id",
+            "user_id",
             "category",
             "name",
             "description",
+            "photo",
             "price",
             "ratings",
             "is_available",
