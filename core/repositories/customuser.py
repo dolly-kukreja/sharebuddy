@@ -56,7 +56,10 @@ class CustomUserRepository:
         LOGGER.info("Send Email OTP success and response: %s, %s", success, response)
         success, response = OneTimePasswordRepository.send_sms_otp(new_user)
         LOGGER.info("Send SMS OTP success and response: %s, %s", success, response)
-        return True, new_user
+        tokens = get_token_pair(new_user)
+        LOGGER.info("token: %s", tokens)
+        tokens.update({"is_admin": new_user.is_superuser})
+        return True, tokens
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
