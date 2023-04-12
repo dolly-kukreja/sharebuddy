@@ -29,15 +29,9 @@ class OneTimePasswordController:
 
     @staticmethod
     @api_view(["POST"])
+    @login_required
     def verify_email_otp(request):
         user = request.user
-        if request.user.is_anonymous:
-            email = request.data.get("email")
-            if not email:
-                return BadRequestJSONResponse(message="Please add email.")
-            user = CustomUser.objects.get(email=email)
-            if not user:
-                return BadRequestJSONResponse(message="Invalid Email ID.")
         otp = request.data.get("otp")
         if not otp:
             return BadRequestJSONResponse(message="Please pass otp.")
@@ -48,15 +42,9 @@ class OneTimePasswordController:
 
     @staticmethod
     @api_view(["POST"])
+    @login_required
     def verify_sms_otp(request):
         user = request.user
-        if request.user.is_anonymous:
-            mobile_number = request.data.get("mobile_number")
-            if not mobile_number:
-                return BadRequestJSONResponse(message="Please add mobile number.")
-            user = CustomUser.objects.get(mobile_number=mobile_number)
-            if not user:
-                return BadRequestJSONResponse(message="Invalid Mobile Number.")
         otp = request.data.get("otp")
         if not otp:
             return BadRequestJSONResponse(message="Please pass otp.")
