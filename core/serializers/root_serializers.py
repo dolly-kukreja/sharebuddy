@@ -1,6 +1,7 @@
 from typing import Any
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from core.models import CustomUser, Address, Product, FriendRequestModel
+from core.models import CustomUser, Address, Product, FriendRequestModel, Friends
+from ast import literal_eval
 
 
 class CustomUserSerializer(ModelSerializer):
@@ -89,7 +90,6 @@ class ProductSerializer(ModelSerializer):
 
 
 class FriendRequestSerializer(ModelSerializer):
-
     full_name = SerializerMethodField()
     user_id = SerializerMethodField()
     profile_photo = SerializerMethodField()
@@ -110,7 +110,7 @@ class FriendRequestSerializer(ModelSerializer):
         """
         Get user profile photo
         """
-        return str(friendrequest.sender_id.profile_photo.url)
+        return str(friendrequest.sender_id.profile_photo.url) if friendrequest.sender_id.profile_photo else None
 
     class Meta:
         model = FriendRequestModel
@@ -121,4 +121,27 @@ class FriendRequestSerializer(ModelSerializer):
             "status",
             "created_date",
             "updated_date",
+        )
+
+
+class FriendSerializer(ModelSerializer):
+    friend_list = SerializerMethodField()
+
+
+    def get_friend_list(self, friends: Friends) -> Any:
+        """
+        Get user id
+        """
+        friends_dict = []
+        for user_id in literal_eval(friends.friends_list):
+            friend_obj = CustomUser.objects.filter(user_id=str(user_id)).first()
+            friends_dict.append([friend_obj.full_name,
+                         str(friend_obj.profile_photo.url) if friend_obj.profile_photo else None,
+                         friend_obj.user_id])
+        return friends_dict
+
+    class Meta:
+        model = Friends
+        fields = (
+            "friend_list",
         )
