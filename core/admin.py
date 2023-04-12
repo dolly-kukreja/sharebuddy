@@ -5,6 +5,7 @@ from core.models import (
     OneTimePassword,
     Product,
     FriendRequestModel,
+    Friends
 )
 
 # Register your models here.
@@ -14,3 +15,4 @@ admin.site.register(Address)
 admin.site.register(OneTimePassword)
 admin.site.register(Product)
 admin.site.register(FriendRequestModel)
+admin.site.register(Friends)

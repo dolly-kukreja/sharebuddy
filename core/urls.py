@@ -5,6 +5,7 @@ from core.views import (
     AddressController,
     FriendRequestController,
     ProductController,
+    FriendsController,
 )
 
 urlpatterns = [
@@ -115,4 +116,14 @@ urlpatterns = [
         FriendRequestController.view_friend_request,
         name="view_friend_request",
     ),
+    path(
+        "remove_friend",
+        FriendsController.remove_friend,
+        name="remove_friend",
+        ),
+    path(
+        "view_friends",
+        FriendsController.view_friends,
+        name="view_friends",
+        ),
 ]

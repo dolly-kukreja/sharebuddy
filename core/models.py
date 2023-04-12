@@ -13,6 +13,7 @@ from django.db.models import (
     DateTimeField,
     DecimalField,
     JSONField,
+    TextField,
 )
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -183,6 +184,7 @@ class FriendRequestModel(Model):
         (FriendRequestStatus.ACCEPT, "Accept"),
         (FriendRequestStatus.REJECT, "Reject"),
         (FriendRequestStatus.PENDING, "Pending"),
+        (FriendRequestStatus.REMOVE, "Remove"),
     )
     sender_id = ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="sender_id"
@@ -207,11 +209,6 @@ class Product(models.Model):
         (ProductCategories.ELECTRONIC, "Electronic"),
         (ProductCategories.FOOTWEAR, "FootWear"),
         (ProductCategories.ACCESSORIES, "Accesssories"),
-    )
-    sharing_types_choices = (
-        (ProductSharingTypes.SELL, "Sell"),
-        (ProductSharingTypes.RENT, "Rent"),
-        (ProductSharingTypes.SHARE, "Share"),
     )
     product_id = CharField(
         primary_key=True,
@@ -240,33 +237,34 @@ class Product(models.Model):
     is_active = BooleanField(default=False)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
+    # sharing_type = CharField(
+    #     max_length=100,
+    #     null=True,
+    #     blank=True,
+    #     choices=sharing_types_choices,
+    #     default=ProductSharingTypes.SHARE,
+    # )
+
+
+class Friends(Model):
+    user = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="user_friends"
+    )
+    friends_list = TextField(null=True)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
 
 
 class Quote(models.Model):
     sharing_types_choices = (
         (ProductSharingTypes.RENT, "Rent"),
         (ProductSharingTypes.SHARE, "Share"),
-        (ProductSharingTypes.DEPOSIT, "Deposit"),
-    )
-    product = ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="quote_product"
-    )
-    owner = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="product_owner"
-    )
-    customer = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="product_customer"
-    )
-    last_updated_by = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="last_updated_by"
-    )
-    exchange_type = CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        choices=sharing_types_choices,
-        default=ProductSharingTypes.RENT,
-    )
+        (ProductSharingTypes.DEPOSIT, "Deposit"),)
+    product = ForeignKey(Product, on_delete=models.CASCADE, related_name="quote_product")
+    owner = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="product_owner")
+    customer = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="product_customer")
+    last_updated_by = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="last_updated_by")
+    exchange_type = CharField(max_length=100, null=True, blank=True, choices=sharing_types_choices, default=ProductSharingTypes.RENT)
     rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     deposit_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     approved_by_owner = BooleanField(default=False)

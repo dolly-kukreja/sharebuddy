@@ -7,3 +7,4 @@ from core.controllers.otp import OneTimePasswordController
 from core.controllers.address import AddressController
 from core.controllers.friendrequest import FriendRequestController
 from core.controllers.product import ProductController
+from core.controllers.friends import FriendsController
