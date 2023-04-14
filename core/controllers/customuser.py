@@ -69,7 +69,7 @@ class CustomUserController:
         )
         if not success:
             return BadRequestJSONResponse(message=response)
-        return SuccessJSONResponse("User Registered Successfully.")
+        return SuccessJSONResponse(response)
 
     @staticmethod
     @api_view(["POST"])
@@ -100,23 +100,6 @@ class CustomUserController:
         return SuccessJSONResponse(response)
 
     @staticmethod
-    @api_view(["POST"])
-    def change_email_mobile(request):
-        post_data = request.data
-        LOGGER.info("Check post data: %s", post_data)
-        old_email = post_data.get("old_email")
-        new_email = post_data.get("new_email")
-        mobile_number = post_data.get("mobile_number")
-        if not old_email or (not new_email and not mobile_number):
-            return BadRequestJSONResponse(message="Invalid Params")
-        success, response = CustomUserRepository.change_email_mobile(
-            old_email, new_email, mobile_number
-        )
-        if not success:
-            return BadRequestJSONResponse(message=response)
-        return SuccessJSONResponse(response)
-
-    @staticmethod
     @api_view(["GET"])
     @login_required
     def get_user_details(request):
@@ -137,7 +120,7 @@ class CustomUserController:
     @api_view(["GET"])
     @login_required
     def get_all_users(request):
-        success, response = CustomUserRepository.get_all_users()
+        success, response = CustomUserRepository.get_all_users(request.user)
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

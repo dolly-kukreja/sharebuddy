@@ -23,6 +23,9 @@ from django.contrib.auth.models import (
 from datetime import datetime
 from django_extensions.db.fields import CreationDateTimeField, ModificationDateTimeField
 from core.constants import (
+    NotificationChannel,
+    NotificationStatus,
+    NotificationType,
     OTPKeyNameTypes,
     FriendRequestStatus,
     ProductCategories,
@@ -69,11 +72,11 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
-def generate_user_id():
-    user_id = "".join(
+def generate_unique_id():
+    unique_id = "".join(
         [random.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZ") for i in range(10)]
     )
-    return user_id
+    return unique_id
 
 
 def get_profile_photo_filepath_with_name(instance, name):
@@ -93,7 +96,11 @@ def get_product_photo_filepath_with_name(instance, name):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     user_id = CharField(
-        max_length=255, editable=False, default=generate_user_id, unique=True, null=True
+        max_length=255,
+        editable=False,
+        default=generate_unique_id,
+        unique=True,
+        null=True,
     )
     first_name = CharField(max_length=700, null=True, blank=True)
     last_name = CharField(max_length=700, null=True, blank=True)
@@ -186,11 +193,11 @@ class FriendRequestModel(Model):
         (FriendRequestStatus.PENDING, "Pending"),
         (FriendRequestStatus.REMOVE, "Remove"),
     )
-    sender_id = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="sender_id"
+    sender = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="sender_user"
     )
-    receiver_id = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="receiver_id"
+    receiver = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="receiver_user"
     )
     status = CharField(
         max_length=100,
@@ -209,12 +216,13 @@ class Product(models.Model):
         (ProductCategories.ELECTRONIC, "Electronic"),
         (ProductCategories.FOOTWEAR, "FootWear"),
         (ProductCategories.ACCESSORIES, "Accesssories"),
+        (ProductCategories.STATIONARY, "Stationary"),
     )
     product_id = CharField(
         primary_key=True,
         max_length=255,
         editable=False,
-        default=generate_user_id,
+        default=generate_unique_id,
         unique=True,
         null=False,
     )
@@ -231,7 +239,7 @@ class Product(models.Model):
     photo = ImageField(
         null=True, blank=True, upload_to=get_product_photo_filepath_with_name
     )
-    price = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     ratings = IntegerField(default=2)
     is_available = BooleanField(default=True)
     is_active = BooleanField(default=False)
@@ -247,9 +255,7 @@ class Product(models.Model):
 
 
 class Friends(Model):
-    user = ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="user_friends"
-    )
+    user = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_friends")
     friends_list = TextField(null=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
@@ -259,12 +265,27 @@ class Quote(models.Model):
     sharing_types_choices = (
         (ProductSharingTypes.RENT, "Rent"),
         (ProductSharingTypes.SHARE, "Share"),
-        (ProductSharingTypes.DEPOSIT, "Deposit"),)
-    product = ForeignKey(Product, on_delete=models.CASCADE, related_name="quote_product")
-    owner = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="product_owner")
-    customer = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="product_customer")
-    last_updated_by = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="last_updated_by")
-    exchange_type = CharField(max_length=100, null=True, blank=True, choices=sharing_types_choices, default=ProductSharingTypes.RENT)
+        (ProductSharingTypes.DEPOSIT, "Deposit"),
+    )
+    product = ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="quote_product"
+    )
+    owner = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="product_owner"
+    )
+    customer = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="product_customer"
+    )
+    last_updated_by = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="last_updated_by"
+    )
+    exchange_type = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=sharing_types_choices,
+        default=ProductSharingTypes.RENT,
+    )
     rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     deposit_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     approved_by_owner = BooleanField(default=False)
@@ -273,5 +294,52 @@ class Quote(models.Model):
     type_change_history = JSONField(blank=True, null=True)
     remarks = JSONField(blank=True, null=True)
     last_updated_at = DateTimeField(null=True, blank=True)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
+
+class Notification(models.Model):
+    status_choices = (
+        (NotificationStatus.READ, "READ"),
+        (NotificationStatus.UNREAD, "UNREAD"),
+    )
+    channel_choices = (
+        (NotificationChannel.MOBILE, "MOBILE"),
+        (NotificationChannel.EMAIL, "EMAIL"),
+        (NotificationChannel.IN_APP, "IN_APP"),
+    )
+    type_choices = (
+        (NotificationType.PRODUCT, "PRODUCT"),
+        (NotificationType.FRIEND_REQUEST, "FRIEND_REQUEST"),
+        (NotificationType.FRIEND, "FRIEND"),
+        (NotificationType.QUOTE, "QUOTE"),
+    )
+    notification_id = CharField(max_length=16, null=True, blank=True, db_index=True)
+    user = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="user_notifications"
+    )
+    text = CharField(max_length=2000)
+    status = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=status_choices,
+        default=NotificationStatus.UNREAD,
+    )
+    channel = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=channel_choices,
+        default=NotificationStatus.UNREAD,
+    )
+    type = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=type_choices,
+        default=NotificationType.QUOTE,
+    )
+    type_id = CharField(max_length=100, null=True, blank=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)

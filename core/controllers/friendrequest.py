@@ -9,16 +9,14 @@ class FriendRequestController:
     @staticmethod
     @api_view(["POST"])
     @login_required
-    def send_request(request):
+    def send_friend_request(request):
         sender_user = request.user
         post_data = request.data
         receiver_id = post_data.get("receiver_id")
 
-        if (
-            not receiver_id or len(receiver_id) != 10
-        ):
+        if not receiver_id or len(receiver_id) != 10:
             return BadRequestJSONResponse(message="Invalid Params")
-        success, response = FriendRequestRepository.send_request(
+        success, response = FriendRequestRepository.send_friend_request(
             sender_user=sender_user,
             receiver_id=receiver_id,
         )
@@ -35,17 +33,14 @@ class FriendRequestController:
         sender_id = post_data.get("sender_id")
         action = int(post_data.get("action"))
         if (
-                not sender_id
-                or len(sender_id) != 10
-                or not action
-                or action not in (FriendRequestStatus.ACCEPT, FriendRequestStatus.REJECT)
+            not sender_id
+            or len(sender_id) != 10
+            or not action
+            or action not in (FriendRequestStatus.ACCEPT, FriendRequestStatus.REJECT)
         ):
-            print('invalid data')
             return BadRequestJSONResponse(message="Invalid Params")
         success, response = FriendRequestRepository.action_on_friend_request(
-            receiver_user=receiver_user,
-            sender_id=sender_id,
-            action=action
+            receiver_user=receiver_user, sender_id=sender_id, action=action
         )
         if not success:
             return BadRequestJSONResponse(message=response)
@@ -54,12 +49,11 @@ class FriendRequestController:
     @staticmethod
     @api_view(["GET"])
     @login_required
-    def view_friend_request(request):
+    def get_friend_request(request):
         receiver_user = request.user
-        success, response = FriendRequestRepository.view_friend_request(
+        success, response = FriendRequestRepository.get_friend_request(
             receiver_user=receiver_user
         )
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
-

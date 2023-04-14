@@ -7,19 +7,18 @@ from core.constants import FriendRequestStatus
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
 from core.models import Friends, CustomUser, FriendRequestModel
-from core.serializers.root_serializers import FriendSerializer
 
 LOGGER = logging.getLogger(__name__)
 
 
 class FriendsRepository:
     def __init__(
-            self,
-            *args,
-            item: Friends = None,
-            many: bool = False,
-            item_list: QuerySet = None,
-            **kwargs,
+        self,
+        *args,
+        item: Friends = None,
+        many: bool = False,
+        item_list: QuerySet = None,
+        **kwargs,
     ):
         super(FriendsRepository, self).__init__(
             *args, model=Friends, item=item, many=many, item_list=item_list, **kwargs
@@ -27,12 +26,28 @@ class FriendsRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def view_friends(current_user):
-        friend_object = Friends.objects.filter(user=current_user)
+    def get_friends(current_user):
+        friend_object = Friends.objects.filter(user=current_user).first()
         if not friend_object:
             return True, "No Friends Found."
-        friend_requests_data = FriendSerializer(friend_object, many=True).data
-        return True, friend_requests_data
+        friends_data = []
+        friends_list = (
+            literal_eval(friend_object.friends_list)
+            if friend_object.friends_list
+            else []
+        )
+        for user_id in friends_list:
+            friend_obj = CustomUser.objects.filter(user_id=str(user_id)).first()
+            friends_data.append(
+                {
+                    "name": friend_obj.full_name,
+                    "photo": str(friend_obj.profile_photo.url)
+                    if friend_obj.profile_photo
+                    else None,
+                    "user_id": friend_obj.user_id,
+                }
+            )
+        return True, friends_data
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
@@ -51,12 +66,18 @@ class FriendsRepository:
         friend_user_object = get_or_none(CustomUser, user_id=friend_id)
         if not friend_user_object:
             return False, "Invalid Sender ID."
-        friend_request_object = FriendRequestModel.objects.filter(Q(sender_id=friend_user_object,
-                                                                    receiver_id=current_user,
-                                                                    status=FriendRequestStatus.ACCEPT) |
-                                                                  Q(sender_id=current_user,
-                                                                    receiver_id=friend_user_object,
-                                                                    status=FriendRequestStatus.ACCEPT)).first()
+        friend_request_object = FriendRequestModel.objects.filter(
+            Q(
+                sender=friend_user_object,
+                receiver=current_user,
+                status=FriendRequestStatus.ACCEPT,
+            )
+            | Q(
+                sender=current_user,
+                receiver=friend_user_object,
+                status=FriendRequestStatus.ACCEPT,
+            )
+        ).first()
         if not friend_request_object:
             return False, "No Such Friendship Found."
         friend_request_object.status = FriendRequestStatus.REMOVE
@@ -64,13 +85,17 @@ class FriendsRepository:
         user_friend_list_object = Friends.objects.filter(user=current_user).first()
         if not user_friend_list_object:
             return False, "No Friends Found."
-        success, response = FriendsRepository.remove_friend_from_db(user_obj=user_friend_list_object,
-                                                                    friend_id=friend_id)
+        success, response = FriendsRepository.remove_friend_from_db(
+            user_obj=user_friend_list_object, friend_id=friend_id
+        )
         if not success:
             return success, response
-        sender_friend_list_object = Friends.objects.filter(user=friend_user_object).first()
-        success, response = FriendsRepository.remove_friend_from_db(user_obj=sender_friend_list_object,
-                                                                    friend_id=current_user.user_id)
+        sender_friend_list_object = Friends.objects.filter(
+            user=friend_user_object
+        ).first()
+        success, response = FriendsRepository.remove_friend_from_db(
+            user_obj=sender_friend_list_object, friend_id=current_user.user_id
+        )
         if not success:
             return success, response
         return True, "Friend Removed Successfully."
@@ -89,5 +114,3 @@ class FriendsRepository:
         accept_friend_object.friends_list = friend_list_str
         accept_friend_object.save()
         return True, "Friend Added Successfully."
-
-

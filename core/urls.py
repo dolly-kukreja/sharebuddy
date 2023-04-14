@@ -18,11 +18,6 @@ urlpatterns = [
         name="update_user_details",
     ),
     path(
-        "change_email_mobile",
-        CustomUserController.change_email_mobile,
-        name="change_email_mobile",
-    ),
-    path(
         "get_user_details",
         CustomUserController.get_user_details,
         name="get_user_details",
@@ -102,9 +97,15 @@ urlpatterns = [
         name="delete_product",
     ),
     path(
-        "send_request",
-        FriendRequestController.send_request,
-        name="send_request",
+        "shop_products",
+        ProductController.shop_products,
+        name="shop_products",
+    ),
+    # Friend Request URLs
+    path(
+        "send_friend_request",
+        FriendRequestController.send_friend_request,
+        name="send_friend_request",
     ),
     path(
         "action_on_friend_request",
@@ -112,18 +113,19 @@ urlpatterns = [
         name="action_on_friend_request",
     ),
     path(
-        "view_friend_request",
-        FriendRequestController.view_friend_request,
-        name="view_friend_request",
+        "get_friend_request",
+        FriendRequestController.get_friend_request,
+        name="get_friend_request",
     ),
+    # Friend URLs
     path(
         "remove_friend",
         FriendsController.remove_friend,
         name="remove_friend",
-        ),
+    ),
     path(
-        "view_friends",
-        FriendsController.view_friends,
-        name="view_friends",
-        ),
+        "get_friends",
+        FriendsController.get_friends,
+        name="get_friends",
+    ),
 ]

@@ -10,7 +10,7 @@ from core.helpers.query_search import get_or_none
 from core.models import CustomUser
 from core.repositories.otp import OneTimePasswordRepository
 from core.serializers.root_serializers import CustomUserSerializer
-from core.serializers.tokenserializers import get_token_pair
+from core.serializers.token_serializers import get_token_pair
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,21 +121,7 @@ class CustomUserRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def change_email_mobile(old_email, new_email, mobile_number):
-        user = CustomUser.objects.filter(email=old_email).first()
-        if not user:
-            return False, "Invalid old email id."
-        if new_email:
-            user.email = new_email
-        if mobile_number:
-            user.mobile_number = mobile_number
-        user.save()
-        return True, "Email Mobile Updated successfully."
-
-    @staticmethod
-    @handle_unknown_exception(logger=LOGGER)
     def get_user_profile(user_id):
-        print("Check user id: ", user_id)
         user = get_or_none(CustomUser, user_id=user_id)
         if not user:
             return False, "Invalid User ID."
@@ -144,7 +130,8 @@ class CustomUserRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def get_all_users():
+    def get_all_users(current_user):
         all_users = CustomUser.objects.all()
-        user_details = CustomUserSerializer(all_users, many=True).data
+        context = {"current_user": current_user}
+        user_details = CustomUserSerializer(all_users, context=context, many=True).data
         return True, user_details

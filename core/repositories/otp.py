@@ -32,7 +32,7 @@ class OneTimePasswordRepository:
         email = user.email
         subject = "Verification OTP"
         code = random_string_generator(length=6, alphabets=True)
-        message = f"{code} is your email verification code."
+        message = f"{code} is your email verification code for ShareBuddy."
         expiry_date = timezone.now() + relativedelta(minutes=10)
         otp = OneTimePassword.objects.create(
             key_name=OTPKeyNameTypes.EMAIL,
@@ -51,7 +51,7 @@ class OneTimePasswordRepository:
     def send_sms_otp(user):
         mobile_number = user.mobile_number
         code = random_string_generator(length=6, alphabets=True)
-        message = f"{code} is your mobile verification code."
+        message = f"{code} is your mobile verification code for ShareBuddy."
         expiry_date = timezone.now() + relativedelta(minutes=10)
         otp = OneTimePassword.objects.create(
             key_name=OTPKeyNameTypes.MOBILE,
@@ -77,7 +77,7 @@ class OneTimePasswordRepository:
             return False, "Otp Expired"
         user.is_email_verified = True
         user.save()
-        return True, "Email verified successfully."
+        return True, "Email verified successfully for ShareBuddy."
 
     @staticmethod
     def verify_sms_otp(user, otp):
@@ -93,4 +93,4 @@ class OneTimePasswordRepository:
             return False, "Otp Expired"
         user.is_mobile_number_verified = True
         user.save()
-        return True, "Mobile Number verified successfully."
+        return True, "Mobile Number verified successfully for ShareBuddy."
