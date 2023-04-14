@@ -25,7 +25,6 @@ class CustomUserSerializer(ModelSerializer):
                     receiver=user,
                 )
             ).first()
-            if friend_request_object:
             if not friend_request_object or int(friend_request_object.status) in (
                 FriendRequestStatus.REMOVE,
                 FriendRequestStatus.REJECT,
