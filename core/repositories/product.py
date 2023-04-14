@@ -1,3 +1,4 @@
+from ast import literal_eval
 import logging
 
 from django.core.files import File
@@ -5,7 +6,7 @@ from django.db.models import QuerySet
 
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
-from core.models import CustomUser, Product
+from core.models import CustomUser, Friends, Product
 from core.serializers.root_serializers import ProductSerializer
 
 LOGGER = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class ProductRepository:
         description: str,
         product_photo: File,
         category: str,
-        price,
+        rent_amount,
     ):
         try:
             new_product = Product.objects.create(
@@ -41,7 +42,7 @@ class ProductRepository:
                 name=name,
                 description=description,
                 photo=product_photo,
-                price=price,
+                rent_amount=rent_amount,
                 is_available=True,
                 is_active=True,
             )
@@ -55,14 +56,20 @@ class ProductRepository:
     def get_all_products(user):
         products = Product.objects.filter(user=user, is_active=True)
         if not products:
-            return False, "No Products Found."
+            return True, "No Products Found."
         products_serialized_data = ProductSerializer(products, many=True).data
         return True, products_serialized_data
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def update_product_details(
-        product_id, category, name, description, product_photo, price, is_available
+        product_id,
+        category,
+        name,
+        description,
+        product_photo,
+        rent_amount,
+        is_available,
     ):
         product = get_or_none(Product, product_id=product_id)
         if not product:
@@ -80,8 +87,8 @@ class ProductRepository:
         if product_photo:
             product.photo = product_photo
 
-        if price:
-            product.price = price
+        if rent_amount:
+            product.rent_amount = rent_amount
 
         if is_available is not None:
             product.is_available = is_available
@@ -98,3 +105,18 @@ class ProductRepository:
         product.is_active = False
         product.save()
         return True, "Product Deleted Successfully."
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def shop_products(current_user):
+        friend_object = Friends.objects.filter(user=current_user).first()
+        if not friend_object:
+            return False, "No Friends Added to Shop."
+        products_queryset = Product.objects.none()
+        for user_id in literal_eval(friend_object.friends_list):
+            user = CustomUser.objects.get(user_id=user_id)
+            user_products = user.user_product.all()
+            products_queryset = products_queryset | user_products
+        products_queryset = products_queryset.order_by("-created_date")
+        products_data = ProductSerializer(products_queryset, many=True).data
+        return True, products_data

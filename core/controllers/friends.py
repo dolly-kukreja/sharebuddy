@@ -9,11 +9,9 @@ class FriendsController:
     @staticmethod
     @api_view(["GET"])
     @login_required
-    def view_friends(request):
+    def get_friends(request):
         current_user = request.user
-        success, response = FriendsRepository.view_friends(
-            current_user=current_user
-        )
+        success, response = FriendsRepository.get_friends(current_user=current_user)
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
@@ -25,14 +23,11 @@ class FriendsController:
         current_user = request.user
         post_data = request.data
         friend_id = post_data.get("friend_id")
-        if (
-                not friend_id
-                or len(friend_id) != 10
-        ):
-            print('invalid data')
+        if not friend_id or len(friend_id) != 10:
             return BadRequestJSONResponse(message="Invalid Params")
-        success, response = FriendsRepository.remove_friend(current_user=current_user,
-                                                            friend_id=friend_id)
+        success, response = FriendsRepository.remove_friend(
+            current_user=current_user, friend_id=friend_id
+        )
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

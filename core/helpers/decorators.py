@@ -77,7 +77,9 @@ def validate_user_details():
 
             address_object = get_or_none(Address, user=user)
             if not address_object:
-                return ForbiddenJSONResponse("Please update your address details.")
+                return ForbiddenJSONResponse(
+                    "Please update your address details in Profile Section."
+                )
 
             return view_function(request, *args, **kwargs)
 

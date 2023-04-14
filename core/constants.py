@@ -3,6 +3,7 @@ class ProductCategories:
     ELECTRONIC = "ELECTRONIC"
     FOOTWEAR = "FOOTWEAR"
     ACCESSORIES = "ACCESSORIES"
+    STATIONARY = "STATIONARY"
 
 
 class ProductSharingTypes:
@@ -28,3 +29,21 @@ class FriendRequestStatus:
     ACCEPT = 2
     REJECT = 3
     REMOVE = 4
+
+
+class NotificationStatus:
+    READ = "READ"
+    UNREAD = "UNREAD"
+
+
+class NotificationChannel:
+    IN_APP = "IN_APP"
+    MOBILE = "MOBILE"
+    EMAIL = "EMAIL"
+
+
+class NotificationType:
+    PRODUCT = "PRODUCT"
+    FRIEND_REQUEST = "FRIEND_REQUEST"
+    FRIEND = "FRIEND"
+    QUOTE = "QUOTE"
