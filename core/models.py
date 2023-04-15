@@ -12,7 +12,6 @@ from django.db.models import (
     ForeignKey,
     DateTimeField,
     DecimalField,
-    JSONField,
     TextField,
 )
 from django.contrib.auth.models import (
@@ -29,7 +28,10 @@ from core.constants import (
     OTPKeyNameTypes,
     FriendRequestStatus,
     ProductCategories,
-    ProductSharingTypes,
+    QuoteExchangeTypes,
+    QuoteStatus,
+    QuotesTransactionStatus,
+    QuotesTransactionTypes,
 )
 
 # Create your models here.
@@ -150,7 +152,7 @@ class Address(Model):
     def __str__(
         self,
     ):
-        return str(self.user.email) + "-" + self.state
+        return str(self.user.email) + "-" + self.city
 
 
 class OneTimePassword(Model):
@@ -185,7 +187,6 @@ class OneTimePassword(Model):
         return str(self.key_name) + "-" + str(self.key_value)
 
 
-# friend request model
 class FriendRequestModel(Model):
     status_choices = (
         (FriendRequestStatus.ACCEPT, "Accept"),
@@ -209,13 +210,22 @@ class FriendRequestModel(Model):
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
 
+    def __str__(self):
+        return (
+            str(self.sender.email)
+            + "-"
+            + str(self.receiver.email)
+            + "-"
+            + str(self.status)
+        )
+
 
 class Product(models.Model):
     category_choices = (
         (ProductCategories.CLOTH, "Cloth"),
         (ProductCategories.ELECTRONIC, "Electronic"),
         (ProductCategories.FOOTWEAR, "FootWear"),
-        (ProductCategories.ACCESSORIES, "Accesssories"),
+        (ProductCategories.ACCESSORIES, "Accessories"),
         (ProductCategories.STATIONARY, "Stationary"),
     )
     product_id = CharField(
@@ -253,6 +263,9 @@ class Product(models.Model):
     #     default=ProductSharingTypes.SHARE,
     # )
 
+    def __str__(self):
+        return str(self.name) + "-" + str(self.category)
+
 
 class Friends(Model):
     user = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_friends")
@@ -260,12 +273,32 @@ class Friends(Model):
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
 
+    def __str__(self):
+        return str(self.user.email)
+
 
 class Quote(models.Model):
-    sharing_types_choices = (
-        (ProductSharingTypes.RENT, "Rent"),
-        (ProductSharingTypes.SHARE, "Share"),
-        (ProductSharingTypes.DEPOSIT, "Deposit"),
+    status_choices = (
+        (QuoteStatus.PLACED, "Placed"),
+        (QuoteStatus.UPDATED, "Updated"),
+        (QuoteStatus.APPROVED, "Approved"),
+        (QuoteStatus.REJECTED, "Rejected"),
+        (QuoteStatus.IN_TRANSIT, "In_Transit"),
+        (QuoteStatus.SHARED, "Shared"),
+        (QuoteStatus.COMPLETED, "Completed"),
+    )
+    exchange_types_choices = (
+        (QuoteExchangeTypes.RENT, "Rent"),
+        (QuoteExchangeTypes.SHARE, "Share"),
+        (QuoteExchangeTypes.DEPOSIT, "Deposit"),
+    )
+    quote_id = CharField(
+        primary_key=True,
+        max_length=255,
+        editable=False,
+        default=generate_unique_id,
+        unique=True,
+        null=False,
     )
     product = ForeignKey(
         Product, on_delete=models.CASCADE, related_name="quote_product"
@@ -279,23 +312,47 @@ class Quote(models.Model):
     last_updated_by = ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="last_updated_by"
     )
+    status = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=status_choices,
+        default=QuoteStatus.PLACED,
+    )
     exchange_type = CharField(
         max_length=100,
         null=True,
         blank=True,
-        choices=sharing_types_choices,
-        default=ProductSharingTypes.RENT,
+        choices=exchange_types_choices,
+        default=QuoteExchangeTypes.SHARE,
     )
     rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     deposit_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    is_rent_paid = BooleanField(default=False)
+    is_deposit_paid = BooleanField(default=False)
+    meetup_point = CharField(max_length=200)
+    from_date = DateField(null=True)
+    to_date = DateField(null=True)
     approved_by_owner = BooleanField(default=False)
     approved_by_customer = BooleanField(default=False)
-    updated_count = IntegerField(default=0)
-    type_change_history = JSONField(blank=True, null=True)
-    remarks = JSONField(blank=True, null=True)
-    last_updated_at = DateTimeField(null=True, blank=True)
+    rejected_by_owner = BooleanField(default=False)
+    rejected_by_customer = BooleanField(default=False)
+    is_closed = BooleanField(default=False)
+    update_count = IntegerField(default=0)
+    remarks = TextField(null=True, blank=True)
+    type_change_history = TextField(null=True)
+    remarks_history = TextField(null=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return (
+            str(self.owner.email)
+            + "-"
+            + str(self.customer.email)
+            + "-"
+            + str(self.product.name)
+        )
 
 
 class Notification(models.Model):
@@ -314,7 +371,6 @@ class Notification(models.Model):
         (NotificationType.FRIEND, "FRIEND"),
         (NotificationType.QUOTE, "QUOTE"),
     )
-    notification_id = CharField(max_length=16, null=True, blank=True, db_index=True)
     user = ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="user_notifications"
     )
@@ -331,7 +387,7 @@ class Notification(models.Model):
         null=True,
         blank=True,
         choices=channel_choices,
-        default=NotificationStatus.UNREAD,
+        default=NotificationChannel.IN_APP,
     )
     type = CharField(
         max_length=100,
@@ -343,3 +399,6 @@ class Notification(models.Model):
     type_id = CharField(max_length=100, null=True, blank=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return str(self.user.email) + "-" + str(self.channel) + "-" + str(self.type)

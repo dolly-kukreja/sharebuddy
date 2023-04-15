@@ -8,3 +8,5 @@ from core.controllers.address import AddressController
 from core.controllers.friendrequest import FriendRequestController
 from core.controllers.product import ProductController
 from core.controllers.friends import FriendsController
+from core.controllers.notification import NotificationController
+from core.controllers.quote import QuoteController

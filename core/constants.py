@@ -6,7 +6,7 @@ class ProductCategories:
     STATIONARY = "STATIONARY"
 
 
-class ProductSharingTypes:
+class QuoteExchangeTypes:
     SHARE = "SHARE"
     RENT = "RENT"
     DEPOSIT = "DEPOSIT"
@@ -29,6 +29,31 @@ class FriendRequestStatus:
     ACCEPT = 2
     REJECT = 3
     REMOVE = 4
+
+
+class QuoteStatus:
+    PLACED = 1
+    UPDATED = 2
+    APPROVED = 3
+    REJECTED = 4
+    IN_TRANSIT = 5
+    SHARED = 6
+    COMPLETED = 7
+
+
+class QuotesTransactionTypes:
+    RENT = "RENT"
+    DEPOSIT = "DEPOSIT"
+
+
+class QuotesTransactionStatus:
+    CREATED = "CREATED"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+
+
+class ErrorMessages:
+    INCORRECT_QUOTE_ID = "Incorrect Quote ID."
 
 
 class NotificationStatus:

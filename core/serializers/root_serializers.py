@@ -1,8 +1,17 @@
 from typing import Any
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from core.models import CustomUser, Address, Product, FriendRequestModel, Friends
+
 from django.db.models import Q
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
+
 from core.constants import FriendRequestStatus
+from core.models import (
+    Address,
+    CustomUser,
+    FriendRequestModel,
+    Product,
+    Quote,
+    Notification,
+)
 
 
 class CustomUserSerializer(ModelSerializer):
@@ -57,23 +66,49 @@ class CustomUserSerializer(ModelSerializer):
         )
 
 
+class CustomUserShortSerializer(ModelSerializer):
+    """
+    Serialize CustomUser Model(But with only required fields)
+    """
+
+    full_name = SerializerMethodField()
+    user_id = SerializerMethodField()
+    profile_photo = SerializerMethodField()
+
+    def get_user_id(self, user: CustomUser) -> Any:
+        """
+        Get user id
+        """
+        return user.user_id
+
+    def get_full_name(self, user: CustomUser) -> Any:
+        """
+        Get user full name
+        """
+        return user.full_name
+
+    def get_profile_photo(self, user: CustomUser) -> Any:
+        """
+        Get user profile photo
+        """
+        return str(user.profile_photo.url) if user.profile_photo else None
+
+    class Meta:
+        model = CustomUser
+        fields = ("user_id", "full_name", "profile_photo")
+
+
 class AddressSerializer(ModelSerializer):
     """
     Serialize Address model.
     """
 
-    user_id = SerializerMethodField()
-
-    def get_user_id(self, address: Address) -> Any:
-        """
-        Get user id
-        """
-        return address.user.user_id
+    user = CustomUserShortSerializer()
 
     class Meta:
         model = Address
         fields = (
-            "user_id",
+            "user",
             "id",
             "line1",
             "line2",
@@ -90,19 +125,13 @@ class ProductSerializer(ModelSerializer):
     Serialize Product Model
     """
 
-    user_id = SerializerMethodField()
-
-    def get_user_id(self, product: Product) -> Any:
-        """
-        Get user id
-        """
-        return product.user.user_id
+    user = CustomUserShortSerializer()
 
     class Meta:
         model = Product
         fields = (
             "product_id",
-            "user_id",
+            "user",
             "category",
             "name",
             "description",
@@ -117,38 +146,16 @@ class ProductSerializer(ModelSerializer):
 
 
 class FriendRequestSerializer(ModelSerializer):
-    full_name = SerializerMethodField()
-    user_id = SerializerMethodField()
-    profile_photo = SerializerMethodField()
+    """
+    Serializer FriendRequest Model
+    """
 
-    def get_user_id(self, friendrequest: FriendRequestModel) -> Any:
-        """
-        Get user id
-        """
-        return friendrequest.sender.user_id
-
-    def get_full_name(self, friendrequest: FriendRequestModel) -> Any:
-        """
-        Get user full name
-        """
-        return friendrequest.sender.full_name
-
-    def get_profile_photo(self, friendrequest: FriendRequestModel) -> Any:
-        """
-        Get user profile photo
-        """
-        return (
-            str(friendrequest.sender.profile_photo.url)
-            if friendrequest.sender.profile_photo
-            else None
-        )
+    sender = CustomUserShortSerializer()
 
     class Meta:
         model = FriendRequestModel
         fields = (
-            "user_id",
-            "full_name",
-            "profile_photo",
+            "sender",
             "status",
             "created_date",
             "updated_date",
@@ -176,3 +183,65 @@ class FriendRequestSerializer(ModelSerializer):
 #         fields = (
 #             "friend_list",
 #         )
+
+
+class QuoteSerializer(ModelSerializer):
+    """
+    Quote model Serializer.
+    """
+
+    customer = CustomUserShortSerializer()
+    owner = CustomUserShortSerializer()
+    last_updated_by = CustomUserShortSerializer()
+    product = ProductSerializer()
+
+    class Meta:
+        model = Quote
+        fields = (
+            "quote_id",
+            "product",
+            "customer",
+            "owner",
+            "last_updated_by",
+            "status",
+            "exchange_type",
+            "rent_amount",
+            "deposit_amount",
+            "is_rent_paid",
+            "is_deposit_paid",
+            "meetup_point",
+            "from_date",
+            "to_date",
+            "approved_by_customer",
+            "approved_by_owner",
+            "rejected_by_customer",
+            "rejected_by_owner",
+            "is_closed",
+            "remarks",
+            "type_change_history",
+            "remarks_history",
+            "created_date",
+            "updated_date",
+        )
+
+
+class NotificationSerializer(ModelSerializer):
+    """
+    Notification Model Serializer
+    """
+
+    user = CustomUserShortSerializer()
+
+    class Meta:
+        model = Notification
+        fields = (
+            "id",
+            "user",
+            "text",
+            "status",
+            "channel",
+            "type",
+            "type_id",
+            "created_date",
+            "updated_date",
+        )
