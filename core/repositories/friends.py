@@ -28,14 +28,10 @@ class FriendsRepository:
     @handle_unknown_exception(logger=LOGGER)
     def get_friends(current_user):
         friend_object = Friends.objects.filter(user=current_user).first()
-        if not friend_object:
+        if not friend_object or not friend_object.friends_list:
             return True, "No Friends Found."
         friends_data = []
-        friends_list = (
-            literal_eval(friend_object.friends_list)
-            if friend_object.friends_list
-            else []
-        )
+        friends_list = literal_eval(friend_object.friends_list)
         for user_id in friends_list:
             friend_obj = CustomUser.objects.filter(user_id=str(user_id)).first()
             friends_data.append(

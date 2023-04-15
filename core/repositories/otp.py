@@ -1,12 +1,16 @@
+import logging
 from dateutil.relativedelta import relativedelta
 from django.db.models import QuerySet
 from django.utils import timezone
 
 from core.constants import OTPKeyNameTypes
 from core.helpers.base import random_string_generator
+from core.helpers.decorators import handle_unknown_exception
 from core.models import OneTimePassword
 from core.services.email import send_email
 from core.services.sms import send_sms
+
+LOGGER = logging.getLogger(__name__)
 
 
 class OneTimePasswordRepository:
@@ -28,6 +32,7 @@ class OneTimePasswordRepository:
         )
 
     @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
     def send_email_otp(user):
         email = user.email
         subject = "Verification OTP"

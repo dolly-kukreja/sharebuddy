@@ -6,6 +6,8 @@ from core.views import (
     FriendRequestController,
     ProductController,
     FriendsController,
+    NotificationController,
+    QuoteController,
 )
 
 urlpatterns = [
@@ -127,5 +129,52 @@ urlpatterns = [
         "get_friends",
         FriendsController.get_friends,
         name="get_friends",
+    ),
+    # Notification URLs
+    path(
+        "get_in_app_notifications",
+        NotificationController.get_in_app_notifications,
+        name="get_in_app_notifications",
+    ),
+    path(
+        "mark_notification_as_read",
+        NotificationController.mark_notification_as_read,
+        name="mark_notification_as_read",
+    ),
+    # Quote URLs
+    path(
+        "place_quote",
+        QuoteController.place_quote,
+        name="place_quote",
+    ),
+    path(
+        "update_quote",
+        QuoteController.update_quote,
+        name="update_quote",
+    ),
+    path(
+        "approve_quote",
+        QuoteController.approve_quote,
+        name="approve_quote",
+    ),
+    path(
+        "reject_quote",
+        QuoteController.reject_quote,
+        name="reject_quote",
+    ),
+    path(
+        "get_my_quotes",
+        QuoteController.get_my_quotes,
+        name="get_my_quotes",
+    ),
+    path(
+        "get_friends_quotes",
+        QuoteController.get_friends_quotes,
+        name="get_friends_quotes",
+    ),
+    path(
+        "get_quote_details",
+        QuoteController.get_quote_details,
+        name="get_quote_details",
     ),
 ]

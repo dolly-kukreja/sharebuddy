@@ -2,10 +2,10 @@ import logging
 
 from django.db.models import QuerySet, Q
 
-from core.constants import FriendRequestStatus
+from core.constants import FriendRequestStatus, NotificationType
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
-from core.models import FriendRequestModel, CustomUser, Friends
+from core.models import FriendRequestModel, CustomUser, Notification
 from core.repositories.friends import FriendsRepository
 from core.serializers.root_serializers import FriendRequestSerializer
 
@@ -69,6 +69,11 @@ class FriendRequestRepository:
             status=FriendRequestStatus.PENDING,
         )
         friend_request_object.save()
+        Notification.objects.create(
+            user=receiver_object,
+            text=f"You have receied a new Friend Request from {sender_user.full_name}.",
+            type=NotificationType.FRIEND_REQUEST,
+        )
         return True, "Friend Request Sent Successfully."
 
     @staticmethod
@@ -93,6 +98,11 @@ class FriendRequestRepository:
             FriendsRepository.add_friend_in_db(user=receiver_user, friend_id=sender_id)
             FriendsRepository.add_friend_in_db(
                 user=sender_object, friend_id=receiver_user.user_id
+            )
+            Notification.objects.create(
+                user=sender_object,
+                text=f"Your Friend Request has been accepted by {receiver_user.full_name}.",
+                type=NotificationType.FRIEND,
             )
         friend_status_dict = {
             key: value

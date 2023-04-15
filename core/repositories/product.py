@@ -111,12 +111,14 @@ class ProductRepository:
     def shop_products(current_user):
         friend_object = Friends.objects.filter(user=current_user).first()
         if not friend_object:
-            return False, "No Friends Added to Shop."
+            return True, "No Friends Added to Shop."
         products_queryset = Product.objects.none()
         for user_id in literal_eval(friend_object.friends_list):
             user = CustomUser.objects.get(user_id=user_id)
             user_products = user.user_product.all()
             products_queryset = products_queryset | user_products
+        if not products_queryset:
+            return True, "No Products to Shop."
         products_queryset = products_queryset.order_by("-created_date")
         products_data = ProductSerializer(products_queryset, many=True).data
         return True, products_data
