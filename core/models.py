@@ -402,3 +402,18 @@ class Notification(models.Model):
 
     def __str__(self):
         return str(self.user.email) + "-" + str(self.channel) + "-" + str(self.type)
+
+
+class Message(models.Model):
+    sender = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='chat_sender')
+    receiver = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='chat_receiver')
+    message = CharField(max_length=1200)
+    is_read = BooleanField(default=False)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return self.message
+
+    class Meta:
+        ordering = ('created_date',)

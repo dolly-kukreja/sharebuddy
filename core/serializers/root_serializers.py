@@ -11,6 +11,7 @@ from core.models import (
     Product,
     Quote,
     Notification,
+    Message,
 )
 
 
@@ -245,3 +246,23 @@ class NotificationSerializer(ModelSerializer):
             "created_date",
             "updated_date",
         )
+
+
+class MessageSerializer(ModelSerializer):
+    """
+    Notification Model Serializer
+    """
+
+    sender = CustomUserShortSerializer()
+    receiver = CustomUserShortSerializer()
+
+    class Meta:
+        model = Message
+        fields = (
+            "sender",
+            "receiver",
+            "message",
+            "is_read",
+            "created_date",
+            "updated_date",
+            )
