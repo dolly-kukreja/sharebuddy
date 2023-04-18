@@ -8,6 +8,7 @@ from core.views import (
     FriendsController,
     NotificationController,
     QuoteController,
+    MessageController
 )
 
 urlpatterns = [
@@ -176,5 +177,10 @@ urlpatterns = [
         "get_quote_details",
         QuoteController.get_quote_details,
         name="get_quote_details",
+    ),
+    path(
+        "message_list",
+        MessageController.message_list,
+        name="message_list",
     ),
 ]
