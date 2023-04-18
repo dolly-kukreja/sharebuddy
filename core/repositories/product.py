@@ -115,7 +115,7 @@ class ProductRepository:
         products_queryset = Product.objects.none()
         for user_id in literal_eval(friend_object.friends_list):
             user = CustomUser.objects.get(user_id=user_id)
-            user_products = user.user_product.all()
+            user_products = user.user_product.filter(is_available=True, is_active=True)
             products_queryset = products_queryset | user_products
         if not products_queryset:
             return True, "No Products to Shop."
