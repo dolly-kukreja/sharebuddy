@@ -65,14 +65,19 @@ class PaymentLinkRepostitory:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def payment_link_webhook(request_data):
-        link_id = request_data.get("link_id")
-        link_status = request_data.get("link_status")
+        print(request_data, "<<<<")
+        link_id = request_data.get("data").get("link_id")
+        if not link_id:
+            link_id = request_data.get("data").get("order").get("order_tags").get("link_id")
+        link_status = request_data.get("data").get("link_status")
+        if not link_status:
+            link_status = request_data.get("data").get("payment").get("payment_status")
         payment_link_object = PaymentLink.objects.get(link_id=link_id)
         payment_link_object.status = link_status
         payment_link_object.save()
         from core.repositories.quote import QuoteRepository
 
-        if link_status == PaymentLinkStatus.PAID:
+        if link_status == PaymentLinkStatus.PAID or link_status == "SUCCESS":
             success, response = QuoteRepository.after_payment_process(
                 payment_link_object.quote, payment_link_object.link_amount
             )
