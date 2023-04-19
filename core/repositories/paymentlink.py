@@ -65,10 +65,11 @@ class PaymentLinkRepostitory:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def payment_link_webhook(request_data):
-        print(request_data, "<<<<")
         link_id = request_data.get("data").get("link_id")
         if not link_id:
-            link_id = request_data.get("data").get("order").get("order_tags").get("link_id")
+            link_id = (
+                request_data.get("data").get("order").get("order_tags").get("link_id")
+            )
         link_status = request_data.get("data").get("link_status")
         if not link_status:
             link_status = request_data.get("data").get("payment").get("payment_status")
