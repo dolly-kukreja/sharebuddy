@@ -480,6 +480,7 @@ class QuoteRepository:
         LOGGER.info(
             "Payment Done Email success and response: %s, %s", success, response
         )
+        return True, "Details Updated Successfully."
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
@@ -506,6 +507,7 @@ class QuoteRepository:
         LOGGER.info(
             "Quote Closed Email success and response: %s, %s", success, response
         )
+        return True, "Details Updated Successfully."
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
