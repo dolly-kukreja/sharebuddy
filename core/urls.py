@@ -183,4 +183,9 @@ urlpatterns = [
         MessageController.message_list,
         name="message_list",
     ),
+    path(
+        "get_last_message",
+        MessageController.get_last_message,
+        name="get_last_message",
+    ),
 ]
