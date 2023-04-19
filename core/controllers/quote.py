@@ -132,3 +132,35 @@ class QuoteController:
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def update_exchange_status(request):
+        current_user = request.user
+        quote_id = request.POST.get("quote_id")
+        if not quote_id:
+            return BadRequestJSONResponse("Invalid Params")
+        success, response = QuoteRepository.update_exchange_status(
+            current_user=current_user,
+            quote_id=quote_id,
+        )
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def update_return_status(request):
+        current_user = request.user
+        quote_id = request.POST.get("quote_id")
+        if not quote_id:
+            return BadRequestJSONResponse("Invalid Params")
+        success, response = QuoteRepository.update_return_status(
+            current_user=current_user,
+            quote_id=quote_id,
+        )
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)

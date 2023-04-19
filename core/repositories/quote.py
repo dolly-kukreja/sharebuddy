@@ -9,6 +9,7 @@ from core.constants import (
     PaymentLinkTransactionTypes,
     QuoteExchangeTypes,
     QuoteStatus,
+    TransactionSourceTarget,
 )
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
@@ -446,3 +447,118 @@ class QuoteRepository:
         LOGGER.info(
             "Quote Closed Email success and response: %s, %s", success, response
         )
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def update_exchange_status(current_user, quote_id):
+        quote = Quote.objects.filter(quote_id=quote_id).first()
+        if not quote:
+            return True, "Invalid Quote Id."
+        if current_user == quote.customer:
+            quote.exchanged_by_customer = True
+        if current_user == quote.owner:
+            quote.exchanged_by_owner = True
+        quote.last_updated_by = current_user
+        if quote.exchanged_by_owner and quote.exchanged_by_customer:
+            quote.is_exchanged = True
+            if quote.exchange_type == QuoteExchangeTypes.RENT:
+                payment_amount = quote.rent_amount
+                admin_user = CustomUser.objects.filter(
+                    email="masters@gmail.com"
+                ).first()
+                admin_wallet = Wallet.objects.get(user=admin_user)
+                admin_wallet.available_balance -= payment_amount
+                admin_wallet.save()
+                owner_wallet = Wallet.objects.get(user=quote.owner)
+                owner_wallet.available_balance += payment_amount
+                owner_wallet.save()
+                Transaction.objects.create(
+                    from_user=admin_user,
+                    to_user=quote.owner,
+                    quote=quote,
+                    amount=payment_amount,
+                    source=TransactionSourceTarget.WALLET,
+                )
+            subject = "Product has been exchanged."
+            message_for_owner = f"Your Product named {quote.product.name} has been exchanged. We have credited your payment, please check you wallet for the same. And do update your details once you receive back your product, so that we can close your quote. We appreciate your time and understanding. \n Thankyou"
+            message_for_customer = f"You have received the Product named {quote.product.name}. Please do update your details once you return back the product, so that we can close your quote and disburse your payment. We appreciate your time and understanding. \n Thankyou"
+            success, response = send_email(
+                subject=subject,
+                message=message_for_customer,
+                receivers=[quote.customer],
+            )
+            LOGGER.info(
+                "Product Exchanged Email success and response: %s, %s",
+                success,
+                response,
+            )
+            success, response = send_email(
+                subject=subject,
+                message=message_for_owner,
+                receivers=[quote.owner],
+            )
+            LOGGER.info(
+                "Product Exchanged Email success and response: %s, %s",
+                success,
+                response,
+            )
+        quote.save()
+        return True, "Product Exchanged Successfully."
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def update_return_status(current_user, quote_id):
+        quote = Quote.objects.filter(quote_id=quote_id).first()
+        if not quote:
+            return True, "Invalid Quote Id."
+        if current_user == quote.customer:
+            quote.returned_by_customer = True
+        if current_user == quote.owner:
+            quote.returned_by_owner = True
+        quote.last_updated_by = current_user
+        if quote.returned_by_customer and quote.returned_by_owner:
+            quote.is_closed = True
+            if quote.exchange_type in (
+                QuoteExchangeTypes.RENT,
+                QuoteExchangeTypes.DEPOSIT,
+            ):
+                payment_amount = quote.deposit_amount
+                admin_user = CustomUser.objects.filter(
+                    email="masters@gmail.com"
+                ).first()
+                admin_wallet = Wallet.objects.get(user=admin_user)
+                print(admin_wallet.available_balance)
+                admin_wallet.available_balance -= payment_amount
+                print(admin_wallet.available_balance)
+                admin_wallet.save()
+                customer_wallet = Wallet.objects.get(user=quote.customer)
+                customer_wallet.available_balance += payment_amount
+                customer_wallet.save()
+                Transaction.objects.create(
+                    from_user=admin_user,
+                    to_user=quote.customer,
+                    quote=quote,
+                    amount=payment_amount,
+                    source=TransactionSourceTarget.WALLET,
+                )
+            subject = "Product has been returned."
+            message_for_owner = f"Your Product named {quote.product.name} has been returned. We are closing this quote here. We appreciate your time and understanding. \n Thankyou"
+            message_for_customer = f"You returned the Product named {quote.product.name}. We have credited your deposit amount, please check your wallet. We appreciate your time and understanding. \n Thankyou"
+            success, response = send_email(
+                subject=subject,
+                message=message_for_customer,
+                receivers=[quote.customer],
+            )
+            LOGGER.info(
+                "Quote Closed Email success and response: %s, %s", success, response
+            )
+            success, response = send_email(
+                subject=subject,
+                message=message_for_owner,
+                receivers=[quote.owner],
+            )
+            LOGGER.info(
+                "Quote Closed Email success and response: %s, %s", success, response
+            )
+        quote.save()
+        return True, "Quote Closed Successfully."

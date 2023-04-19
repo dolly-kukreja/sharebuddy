@@ -187,6 +187,16 @@ urlpatterns = [
     ),
     ## Message URLs
     path(
+        "update_exchange_status",
+        QuoteController.update_exchange_status,
+        name="update_exchange_status",
+    ),
+    path(
+        "update_return_status",
+        QuoteController.update_return_status,
+        name="update_return_status",
+    ),
+    path(
         "message_list",
         MessageController.message_list,
         name="message_list",

@@ -338,7 +338,13 @@ class Quote(models.Model):
     approved_by_customer = BooleanField(default=False)
     rejected_by_owner = BooleanField(default=False)
     rejected_by_customer = BooleanField(default=False)
+    exchanged_by_owner = BooleanField(default=False)
+    exchanged_by_customer = BooleanField(default=False)
+    returned_by_owner = BooleanField(default=False)
+    returned_by_customer = BooleanField(default=False)
     is_approved = BooleanField(default=False)
+    is_exchanged = BooleanField(default=False)
+    is_closed = BooleanField(default=False)
     update_count = IntegerField(default=0)
     remarks = TextField(null=True, blank=True)
     type_change_history = TextField(null=True)
@@ -470,7 +476,7 @@ class Wallet(models.Model):
     updated_date = ModificationDateTimeField(null=True)
 
     def __str__(self):
-        return str(self.user.email) + "-" + self.available_balance
+        return str(self.user.email) + "-" + str(self.available_balance)
 
 
 class Transaction(models.Model):
