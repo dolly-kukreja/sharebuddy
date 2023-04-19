@@ -30,7 +30,7 @@ class NotificationRepository:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def get_in_app_notifications(current_user):
-        notifications = current_user.user_notifications.all()
+        notifications = current_user.user_notifications.all().order_by("-created_date")
         if not notifications:
             return True, "Notifications not found."
         unread_count = notifications.filter(status=NotificationStatus.UNREAD).count()

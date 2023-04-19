@@ -8,7 +8,10 @@ from core.models import (
     Friends,
     Quote,
     Notification,
+    PaymentLink,
     Message,
+    Wallet,
+    Transaction,
 )
 
 # Register your models here.
@@ -21,4 +24,7 @@ admin.site.register(FriendRequestModel)
 admin.site.register(Friends)
 admin.site.register(Quote)
 admin.site.register(Notification)
+admin.site.register(PaymentLink)
 admin.site.register(Message)
+admin.site.register(Wallet)
+admin.site.register(Transaction)
