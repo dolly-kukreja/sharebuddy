@@ -8,7 +8,8 @@ from core.views import (
     FriendsController,
     NotificationController,
     QuoteController,
-    MessageController
+    PaymentLinkController,
+    MessageController,
 )
 
 urlpatterns = [
@@ -178,6 +179,13 @@ urlpatterns = [
         QuoteController.get_quote_details,
         name="get_quote_details",
     ),
+    ## Payment URLs
+    path(
+        "payment_link_webhook",
+        PaymentLinkController.payment_link_webhook,
+        name="payment_link_webhook",
+    ),
+    ## Message URLs
     path(
         "message_list",
         MessageController.message_list,

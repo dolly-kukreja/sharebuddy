@@ -10,4 +10,5 @@ from core.controllers.product import ProductController
 from core.controllers.friends import FriendsController
 from core.controllers.notification import NotificationController
 from core.controllers.quote import QuoteController
+from core.controllers.paymentlink import PaymentLinkController
 from core.controllers.message import MessageController

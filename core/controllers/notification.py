@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
-from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 
+from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.repositories.notification import NotificationRepository
 
 

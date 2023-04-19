@@ -217,7 +217,7 @@ class QuoteSerializer(ModelSerializer):
             "approved_by_owner",
             "rejected_by_customer",
             "rejected_by_owner",
-            "is_closed",
+            "is_approved",
             "remarks",
             "type_change_history",
             "remarks_history",
@@ -265,4 +265,4 @@ class MessageSerializer(ModelSerializer):
             "is_read",
             "created_date",
             "updated_date",
-            )
+        )

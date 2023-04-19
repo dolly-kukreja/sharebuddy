@@ -27,6 +27,7 @@ from core.constants import (
     NotificationType,
     OTPKeyNameTypes,
     FriendRequestStatus,
+    PaymentLinkStatus,
     ProductCategories,
     QuoteExchangeTypes,
     QuoteStatus,
@@ -337,7 +338,7 @@ class Quote(models.Model):
     approved_by_customer = BooleanField(default=False)
     rejected_by_owner = BooleanField(default=False)
     rejected_by_customer = BooleanField(default=False)
-    is_closed = BooleanField(default=False)
+    is_approved = BooleanField(default=False)
     update_count = IntegerField(default=0)
     remarks = TextField(null=True, blank=True)
     type_change_history = TextField(null=True)
@@ -402,6 +403,45 @@ class Notification(models.Model):
 
     def __str__(self):
         return str(self.user.email) + "-" + str(self.channel) + "-" + str(self.type)
+
+
+class PaymentLink(models.Model):
+    status_choices = (
+        (PaymentLinkStatus.ACTIVE, "Active"),
+        (PaymentLinkStatus.PAID, "Paid"),
+        (PaymentLinkStatus.EXPIRED, "Expired"),
+    )
+    user = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_payment")
+    quote = ForeignKey(Quote, on_delete=models.CASCADE, related_name="quote_payment")
+    link_id = CharField(
+        primary_key=True,
+        max_length=255,
+        editable=False,
+        unique=True,
+        null=False,
+    )
+    link_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    link_purpose = CharField(max_length=200)
+    expiry_date = DateTimeField(null=True, blank=True)
+    status = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=status_choices,
+        default=PaymentLinkStatus.ACTIVE,
+    )
+    link_url = CharField(max_length=100)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return (
+            str(self.user.email)
+            + "-"
+            + str(self.link_purpose)
+            + "-"
+            + str(self.expiry_date)
+        )
 
 
 class Message(models.Model):

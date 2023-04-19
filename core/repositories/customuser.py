@@ -7,7 +7,7 @@ from django.db.models import QuerySet
 
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
-from core.models import CustomUser
+from core.models import CustomUser, Wallet
 from core.repositories.otp import OneTimePasswordRepository
 from core.serializers.root_serializers import CustomUserSerializer
 from core.serializers.token_serializers import get_token_pair
@@ -56,6 +56,7 @@ class CustomUserRepository:
         LOGGER.info("Send Email OTP success and response: %s, %s", success, response)
         success, response = OneTimePasswordRepository.send_sms_otp(new_user)
         LOGGER.info("Send SMS OTP success and response: %s, %s", success, response)
+        Wallet.objects.create(user=new_user)
         tokens = get_token_pair(new_user)
         LOGGER.info("token: %s", tokens)
         tokens.update({"is_admin": new_user.is_superuser})

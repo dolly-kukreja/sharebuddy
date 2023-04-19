@@ -41,17 +41,6 @@ class QuoteStatus:
     COMPLETED = 7
 
 
-class QuotesTransactionTypes:
-    RENT = "RENT"
-    DEPOSIT = "DEPOSIT"
-
-
-class QuotesTransactionStatus:
-    CREATED = "CREATED"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-
-
 class ErrorMessages:
     INCORRECT_QUOTE_ID = "Incorrect Quote ID."
 
@@ -72,6 +61,17 @@ class NotificationType:
     FRIEND_REQUEST = "FRIEND_REQUEST"
     FRIEND = "FRIEND"
     QUOTE = "QUOTE"
+
+
+class PaymentLinkStatus:
+    ACTIVE = "ACTIVE"
+    PAID = "PAID"
+    EXPIRED = "EXPIRED"
+
+
+class PaymentLinkTransactionTypes:
+    RENT = "RENT"
+    DEPOSIT = "DEPOSIT"
 
 
 class TransactionType:
