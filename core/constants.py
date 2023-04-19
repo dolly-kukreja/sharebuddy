@@ -32,13 +32,13 @@ class FriendRequestStatus:
 
 
 class QuoteStatus:
-    PLACED = 1
-    UPDATED = 2
-    APPROVED = 3
-    REJECTED = 4
-    IN_TRANSIT = 5
-    SHARED = 6
-    COMPLETED = 7
+    PLACED = "PLACED"
+    UPDATED = "UPDATED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    IN_TRANSIT = "IN_TRANSIT"
+    SHARED = "SHARED"
+    COMPLETED = "COMPLETED"
 
 
 class ErrorMessages:
