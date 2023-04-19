@@ -164,3 +164,37 @@ class QuoteController:
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def update_user_ratings(request):
+        current_user = request.user
+        quote_id = request.POST.get("quote_id")
+        ratings = request.POST.get("ratings")
+        if not quote_id or not ratings:
+            return BadRequestJSONResponse("Invalid Params")
+        success, response = QuoteRepository.update_user_ratings(
+            current_user=current_user,
+            quote_id=quote_id,
+            ratings=ratings,
+        )
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def update_product_ratings(request):
+        quote_id = request.POST.get("quote_id")
+        ratings = request.POST.get("ratings")
+        if not quote_id or not ratings:
+            return BadRequestJSONResponse("Invalid Params")
+        success, response = QuoteRepository.update_product_ratings(
+            quote_id=quote_id,
+            ratings=ratings,
+        )
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)

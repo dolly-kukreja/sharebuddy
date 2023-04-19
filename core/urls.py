@@ -197,6 +197,17 @@ urlpatterns = [
         name="update_return_status",
     ),
     path(
+        "update_user_ratings",
+        QuoteController.update_user_ratings,
+        name="update_user_ratings",
+    ),
+    path(
+        "update_product_ratings",
+        QuoteController.update_product_ratings,
+        name="update_product_ratings",
+    ),
+    ## Message URLs
+    path(
         "message_list",
         MessageController.message_list,
         name="message_list",

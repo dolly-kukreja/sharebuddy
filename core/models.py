@@ -13,6 +13,7 @@ from django.db.models import (
     DateTimeField,
     DecimalField,
     TextField,
+    JSONField,
 )
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -60,7 +61,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, mobile_number, password):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -68,7 +69,7 @@ class CustomUserManager(BaseUserManager):
 
         if not re.search(r"^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$", email):
             raise ValueError("Invalid email address")
-        user = self.create_user(email, password=password)
+        user = self.create_user(email, mobile_number=mobile_number, password=password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -118,7 +119,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = BooleanField(default=True, verbose_name="Active")
     is_staff = BooleanField(default=False, verbose_name="Staff")
     is_superuser = BooleanField(default=False, verbose_name="SuperUser")
-    ratings = IntegerField(default=2)
+    average_ratings = IntegerField(default=0)
+    ratings = JSONField(null=True, blank=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
     USERNAME_FIELD = "email"
@@ -251,7 +253,8 @@ class Product(models.Model):
         null=True, blank=True, upload_to=get_product_photo_filepath_with_name
     )
     rent_amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
-    ratings = IntegerField(default=2)
+    average_ratings = IntegerField(default=0)
+    ratings = JSONField(null=True, blank=True)
     is_available = BooleanField(default=True)
     is_active = BooleanField(default=False)
     created_date = CreationDateTimeField(null=True)
@@ -347,6 +350,9 @@ class Quote(models.Model):
     is_closed = BooleanField(default=False)
     update_count = IntegerField(default=0)
     remarks = TextField(null=True, blank=True)
+    customer_ratings = IntegerField(default=0)
+    owner_ratings = IntegerField(default=0)
+    product_ratings = IntegerField(default=0)
     type_change_history = TextField(null=True)
     remarks_history = TextField(null=True)
     created_date = CreationDateTimeField(null=True)
