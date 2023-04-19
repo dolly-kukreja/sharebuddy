@@ -72,3 +72,13 @@ class NotificationType:
     FRIEND_REQUEST = "FRIEND_REQUEST"
     FRIEND = "FRIEND"
     QUOTE = "QUOTE"
+
+
+class TransactionType:
+    CREDIT = "CREDIT"
+    DEBIT = "DEBIT"
+
+
+class TransactionSourceTarget:
+    WALLET = "WALLET"
+    BANK = "BANK"
