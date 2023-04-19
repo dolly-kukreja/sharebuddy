@@ -10,6 +10,7 @@ from core.views import (
     QuoteController,
     PaymentLinkController,
     MessageController,
+    WalletController,
 )
 
 urlpatterns = [
@@ -179,13 +180,6 @@ urlpatterns = [
         QuoteController.get_quote_details,
         name="get_quote_details",
     ),
-    ## Payment URLs
-    path(
-        "payment_link_webhook",
-        PaymentLinkController.payment_link_webhook,
-        name="payment_link_webhook",
-    ),
-    ## Message URLs
     path(
         "update_exchange_status",
         QuoteController.update_exchange_status,
@@ -206,6 +200,12 @@ urlpatterns = [
         QuoteController.update_product_ratings,
         name="update_product_ratings",
     ),
+    ## Payment URLs
+    path(
+        "payment_link_webhook",
+        PaymentLinkController.payment_link_webhook,
+        name="payment_link_webhook",
+    ),
     ## Message URLs
     path(
         "message_list",
@@ -216,5 +216,11 @@ urlpatterns = [
         "get_last_message",
         MessageController.get_last_message,
         name="get_last_message",
+    ),
+    ## Wallet URLs
+    path(
+        "get_wallet_balance",
+        WalletController.get_wallet_balance,
+        name="get_wallet_balance",
     ),
 ]
