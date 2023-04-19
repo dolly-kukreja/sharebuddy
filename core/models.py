@@ -30,8 +30,8 @@ from core.constants import (
     ProductCategories,
     QuoteExchangeTypes,
     QuoteStatus,
-    QuotesTransactionStatus,
-    QuotesTransactionTypes,
+    TransactionType,
+    TransactionSourceTarget,
 )
 
 # Create your models here.
@@ -405,8 +405,12 @@ class Notification(models.Model):
 
 
 class Message(models.Model):
-    sender = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='chat_sender')
-    receiver = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='chat_receiver')
+    sender = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="chat_sender"
+    )
+    receiver = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="chat_receiver"
+    )
     message = CharField(max_length=1200)
     is_read = BooleanField(default=False)
     created_date = CreationDateTimeField(null=True)
@@ -416,4 +420,67 @@ class Message(models.Model):
         return self.message
 
     class Meta:
-        ordering = ('created_date',)
+        ordering = ("created_date",)
+
+
+class Wallet(models.Model):
+    user = ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_wallet")
+    available_balance = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return str(self.user.email) + "-" + self.available_balance
+
+
+class Transaction(models.Model):
+    type_choices = (
+        (TransactionType.CREDIT, "CREDIT"),
+        (TransactionType.DEBIT, "DEBIT"),
+    )
+    source_target_choices = (
+        (TransactionSourceTarget.WALLET, "WALLET"),
+        (TransactionSourceTarget.BANK, "BANK"),
+    )
+    from_user = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="from_user_transaction"
+    )
+    to_user = ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="to_user_transaction"
+    )
+    quote = ForeignKey(
+        Quote, on_delete=models.CASCADE, related_name="transaction_quote"
+    )
+    amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
+    type = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=type_choices,
+        default=TransactionType.CREDIT,
+    )
+    source = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=source_target_choices,
+        default=TransactionSourceTarget.BANK,
+    )
+    target = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=source_target_choices,
+        default=TransactionSourceTarget.WALLET,
+    )
+    created_date = CreationDateTimeField(null=True)
+    updated_date = ModificationDateTimeField(null=True)
+
+    def __str__(self):
+        return (
+            str(self.from_user.email)
+            + "-"
+            + str(self.to_user.email)
+            + "-"
+            + str(self.amount)
+        )
