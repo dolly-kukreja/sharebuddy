@@ -300,6 +300,65 @@ class QuoteRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
+    def calculate_average_ratings(ratings):
+        multiplication_sum = 0
+        for rating, ratings_by in ratings.items():
+            multiplication_sum += int(rating) * ratings_by
+        average_ratings = multiplication_sum / (sum(ratings.values()))
+        return average_ratings
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def update_user_ratings(current_user, quote_id, ratings):
+        ratings = int(ratings)
+        quote = Quote.objects.filter(quote_id=quote_id).first()
+        if not quote:
+            return False, "Incorrect Quote ID."
+        if current_user == quote.customer:
+            user = quote.owner
+            quote.owner_ratings = ratings
+        if current_user == quote.owner:
+            user = quote.customer
+            quote.customer_ratings = ratings
+        quote.save()
+        existing_ratings = user.ratings
+        if not existing_ratings:
+            existing_ratings = {ratings: 1}
+        elif existing_ratings.get(ratings):
+            existing_ratings[ratings] += 1
+        else:
+            existing_ratings.update({ratings: 1})
+        average_ratings = QuoteRepository.calculate_average_ratings(existing_ratings)
+        user.ratings = existing_ratings
+        user.average_ratings = average_ratings
+        user.save()
+        return True, "Ratings Updated Successfully."
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def update_product_ratings(quote_id, ratings):
+        ratings = int(ratings)
+        quote = Quote.objects.filter(quote_id=quote_id).first()
+        if not quote:
+            return False, "Incorrect Quote ID."
+        quote.product_ratings = ratings
+        quote.save()
+        product = quote.product
+        existing_ratings = product.ratings
+        if not existing_ratings:
+            existing_ratings = {ratings: 1}
+        elif existing_ratings.get(ratings):
+            existing_ratings[ratings] += 1
+        else:
+            existing_ratings.update({ratings: 1})
+        average_ratings = QuoteRepository.calculate_average_ratings(existing_ratings)
+        product.ratings = existing_ratings
+        product.average_ratings = average_ratings
+        product.save()
+        return True, "Ratings Updated Successfully."
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
     def handle_approved_quote_process(quote):
         if quote.exchange_type == QuoteExchangeTypes.SHARE:
             subject = "Quote has been approved."
