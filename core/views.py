@@ -13,3 +13,4 @@ from core.controllers.quote import QuoteController
 from core.controllers.paymentlink import PaymentLinkController
 from core.controllers.message import MessageController
 from core.controllers.wallet import WalletController
+from core.controllers.transaction import TransactionController

@@ -34,6 +34,7 @@ from core.constants import (
     QuoteStatus,
     TransactionType,
     TransactionSourceTarget,
+    TransactionStatus,
 )
 
 # Create your models here.
@@ -486,6 +487,12 @@ class Wallet(models.Model):
 
 
 class Transaction(models.Model):
+    status_choices = (
+        (TransactionStatus.INITIATED, "Initiated"),
+        (TransactionStatus.IN_PROCESS, "In_Process"),
+        (TransactionStatus.FAILED, "Failed"),
+        (TransactionStatus.COMPLETED, "Completed"),
+    )
     type_choices = (
         (TransactionType.CREDIT, "CREDIT"),
         (TransactionType.DEBIT, "DEBIT"),
@@ -501,15 +508,22 @@ class Transaction(models.Model):
         CustomUser, on_delete=models.CASCADE, related_name="to_user_transaction"
     )
     quote = ForeignKey(
-        Quote, on_delete=models.CASCADE, related_name="transaction_quote"
+        Quote, on_delete=models.CASCADE, related_name="transaction_quote", null=True, blank=True
     )
     amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
-    type = CharField(
+    ttype = CharField(
         max_length=100,
         null=True,
         blank=True,
         choices=type_choices,
         default=TransactionType.CREDIT,
+    )
+    status = CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        choices=status_choices,
+        default=TransactionStatus.COMPLETED,
     )
     source = CharField(
         max_length=100,
@@ -525,6 +539,7 @@ class Transaction(models.Model):
         choices=source_target_choices,
         default=TransactionSourceTarget.WALLET,
     )
+    remarks = TextField(null=True, blank=True)
     created_date = CreationDateTimeField(null=True)
     updated_date = ModificationDateTimeField(null=True)
 

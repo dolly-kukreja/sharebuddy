@@ -53,8 +53,10 @@ class ProductRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def get_all_products(user):
-        products = Product.objects.filter(user=user, is_active=True)
+    def get_my_products(user):
+        products = Product.objects.filter(user=user, is_active=True).order_by(
+            "-created_by"
+        )
         if not products:
             return True, "No Products Found."
         products_serialized_data = ProductSerializer(products, many=True).data

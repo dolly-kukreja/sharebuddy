@@ -12,6 +12,7 @@ from core.models import (
     Quote,
     Notification,
     Message,
+    Transaction,
 )
 
 
@@ -258,7 +259,7 @@ class NotificationSerializer(ModelSerializer):
 
 class MessageSerializer(ModelSerializer):
     """
-    Notification Model Serializer
+    Message Model Serializer
     """
 
     sender = CustomUserShortSerializer()
@@ -271,6 +272,32 @@ class MessageSerializer(ModelSerializer):
             "receiver",
             "message",
             "is_read",
+            "created_date",
+            "updated_date",
+        )
+
+
+class TransactionSerializer(ModelSerializer):
+    """
+    Transaction Model Serializer
+    """
+
+    from_user = CustomUserShortSerializer()
+    to_user = CustomUserShortSerializer()
+    quote = QuoteSerializer()
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "from_user",
+            "to_user",
+            "quote",
+            "amount",
+            "ttype",
+            "status",
+            "source",
+            "target",
+            "remarks",
             "created_date",
             "updated_date",
         )

@@ -132,7 +132,11 @@ class CustomUserRepository:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def get_all_users(current_user):
-        all_users = CustomUser.objects.all()
+        all_users = (
+            CustomUser.objects.filter(is_active=True)
+            .exclude(email="masters@gmail.com")
+            .order_by("full_name")
+        )
         context = {"current_user": current_user}
         user_details = CustomUserSerializer(all_users, context=context, many=True).data
         return True, user_details
