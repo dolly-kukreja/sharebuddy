@@ -93,7 +93,7 @@ urlpatterns = [
         name="get_product_details",
     ),
     path(
-        "get_all_products",
+        "get_my_products",
         ProductController.get_my_products,
         name="get_my_products",
     ),
@@ -113,9 +113,9 @@ urlpatterns = [
         name="shop_products",
     ),
     path(
-        "get_my_products",
+        "get_all_products",
         ProductController.get_all_products,
-        name="get_my_products",
+        name="get_all_products",
     ),
     # Friend Request URLs
     path(
