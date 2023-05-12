@@ -2,10 +2,11 @@ import logging
 from ast import literal_eval
 
 from django.db.models import Q, QuerySet
+from core.constants import NotificationType
 
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
-from core.models import CustomUser, Friends, Message
+from core.models import CustomUser, Friends, Message, Notification
 from core.serializers.root_serializers import MessageSerializer
 
 LOGGER = logging.getLogger(__name__)
@@ -54,6 +55,12 @@ class MessageRepository:
                 is_read=False,
             )
             send_message.save()
+            Notification.objects.create(
+                user=receiver_object,
+                text=f"Received a new message from {sender_user.full_name}.",
+                type=NotificationType.CHAT,
+                type_id=sender_user.user_id,
+            )
             message_list_object = Message.objects.filter(
                 Q(
                     sender=sender_user,
@@ -86,11 +93,18 @@ class MessageRepository:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def get_last_message(current_user):
-        friend_list_object = Friends.objects.filter(user=current_user).first()
-        if not friend_list_object or not friend_list_object.friends_list:
-            return True, "No Friends Found."
         message_data = []
-        friends_list = literal_eval(friend_list_object.friends_list)
+        if not current_user.is_superuser:
+            friend_list_object = Friends.objects.filter(user=current_user).first()
+            if not friend_list_object or not friend_list_object.friends_list:
+                return True, "No Friends Found."
+            friends_list = literal_eval(friend_list_object.friends_list)
+            admin_user = CustomUser.objects.get(email="masters@gmail.com")
+            friends_list.append(admin_user.user_id)
+        else:
+            friends_list = CustomUser.objects.filter(is_superuser=False).values_list(
+                "user_id", flat=True
+            )
         for friend in friends_list:
             friend_object = get_or_none(CustomUser, user_id=friend)
             message_list_object = (

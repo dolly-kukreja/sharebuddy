@@ -51,7 +51,6 @@ class FriendRequestRepository:
                 status__in=[FriendRequestStatus.ACCEPT, FriendRequestStatus.PENDING],
             )
         )
-
         if friend_request_object:
             return False, "Friendship already exist or in Pending Stage."
         friend_request_object_reject = FriendRequestModel.objects.filter(
@@ -62,16 +61,16 @@ class FriendRequestRepository:
         if friend_request_object_reject:
             friend_request_object_reject.status = FriendRequestStatus.PENDING
             friend_request_object_reject.save()
-            return True, "Friend Request Sent Successfully."
-        friend_request_object = FriendRequestModel(
-            sender=sender_user,
-            receiver=receiver_object,
-            status=FriendRequestStatus.PENDING,
-        )
-        friend_request_object.save()
+        else:
+            friend_request_object = FriendRequestModel(
+                sender=sender_user,
+                receiver=receiver_object,
+                status=FriendRequestStatus.PENDING,
+            )
+            friend_request_object.save()
         Notification.objects.create(
             user=receiver_object,
-            text=f"You have receied a new Friend Request from {sender_user.full_name}.",
+            text=f"You have received a new Friend Request from {sender_user.full_name}.",
             type=NotificationType.FRIEND_REQUEST,
         )
         return True, "Friend Request Sent Successfully."
@@ -99,11 +98,11 @@ class FriendRequestRepository:
             FriendsRepository.add_friend_in_db(
                 user=sender_object, friend_id=receiver_user.user_id
             )
-            Notification.objects.create(
-                user=sender_object,
-                text=f"Your Friend Request has been accepted by {receiver_user.full_name}.",
-                type=NotificationType.FRIEND,
-            )
+        Notification.objects.create(
+            user=sender_object,
+            text=f"Your Friend Request has been {action}ed by {receiver_user.full_name}.",
+            type=NotificationType.FRIEND,
+        )
         friend_status_dict = {
             key: value
             for key, value in FriendRequestStatus.__dict__.items()

@@ -385,6 +385,7 @@ class Notification(models.Model):
         (NotificationType.FRIEND_REQUEST, "FRIEND_REQUEST"),
         (NotificationType.FRIEND, "FRIEND"),
         (NotificationType.QUOTE, "QUOTE"),
+        (NotificationType.CHAT, "CHAT"),
     )
     user = ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="user_notifications"

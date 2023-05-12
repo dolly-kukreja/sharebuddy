@@ -61,6 +61,7 @@ class NotificationType:
     FRIEND_REQUEST = "FRIEND_REQUEST"
     FRIEND = "FRIEND"
     QUOTE = "QUOTE"
+    CHAT = "CHAT"
 
 
 class PaymentLinkStatus:
