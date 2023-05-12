@@ -62,7 +62,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, mobile_number, password):
+    def create_superuser(self, email, password):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -70,10 +70,11 @@ class CustomUserManager(BaseUserManager):
 
         if not re.search(r"^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$", email):
             raise ValueError("Invalid email address")
-        user = self.create_user(email, mobile_number=mobile_number, password=password)
+        user = self.create_user(email, password=password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
+        Wallet.objects.create(user=user)
         return user
 
 
@@ -508,7 +509,11 @@ class Transaction(models.Model):
         CustomUser, on_delete=models.CASCADE, related_name="to_user_transaction"
     )
     quote = ForeignKey(
-        Quote, on_delete=models.CASCADE, related_name="transaction_quote", null=True, blank=True
+        Quote,
+        on_delete=models.CASCADE,
+        related_name="transaction_quote",
+        null=True,
+        blank=True,
     )
     amount = DecimalField(default=0.0, max_digits=15, decimal_places=4)
     ttype = CharField(

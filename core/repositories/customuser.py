@@ -134,7 +134,7 @@ class CustomUserRepository:
     def get_all_users(current_user):
         all_users = (
             CustomUser.objects.filter(is_active=True)
-            .exclude(email="masters@gmail.com")
+            .exclude(is_superuser=True)
             .order_by("first_name")
         )
         context = {"current_user": current_user}
