@@ -23,7 +23,7 @@ def create_payment_link(link_id, link_amount, link_purpose, customer, expiry_tim
                 "customer_name": customer.full_name,
                 "customer_email": customer.email,
             },
-            "link_expiry_time": str(expiry_time),
+            "link_expiry_time": expiry_time,
             "link_notify": {"send_email": True, "send_sms": True},
         }
     )

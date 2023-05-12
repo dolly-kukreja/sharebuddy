@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.db.models import QuerySet
+from datetime import datetime, timedelta
 
 from core.constants import PaymentLinkStatus, PaymentLinkTransactionTypes
 from core.helpers.decorators import handle_unknown_exception
@@ -37,13 +38,20 @@ class PaymentLinkRepostitory:
         if payment_type == PaymentLinkTransactionTypes.DEPOSIT:
             payment_amount = quote.deposit_amount
         payment_link = generate_unique_id()
+        one_hour_from_now = datetime.now() + timedelta(hours=1)
+        one_hour_from_now = one_hour_from_now.replace(day=quote.from_date.day)
+        one_hour_from_now = one_hour_from_now.replace(month=quote.from_date.month)
+        one_hour_from_now = one_hour_from_now.replace(year=quote.from_date.year)
+        one_hour_from_now_str = str(one_hour_from_now)
+        one_hour_from_now_str = one_hour_from_now_str.replace(" ", "T")
+        one_hour_from_now_str += "+05:30"
         payment_purpose = str(payment_type) + " for " + str(quote.product.name)
         success, response = create_payment_link(
             link_id=payment_link,
             link_amount=payment_amount,
             link_purpose=payment_purpose,
             customer=user,
-            expiry_time=quote.from_date.strftime("%Y-%m-%dT%H:%M:%S+05:30"),
+            expiry_time=one_hour_from_now_str,
         )
         if not success:
             return False, response
