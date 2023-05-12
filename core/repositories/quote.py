@@ -49,6 +49,8 @@ class QuoteRepository:
         product = Product.objects.get(product_id=product_id)
         if not product:
             return False, "Product not found."
+        if not product.is_available or not product.is_active:
+            return False, "Product not available to shop."
         from_date_format = datetime.strptime(from_date, "%d/%m/%Y")
         to_date_format = datetime.strptime(to_date, "%d/%m/%Y")
         new_quote = Quote.objects.create(
