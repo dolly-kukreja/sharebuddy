@@ -30,7 +30,7 @@ class TransactionRepository:
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def get_all_transactions():
-        transactions = Transaction.objects.all().order_by("-created_by")
+        transactions = Transaction.objects.all().order_by("-created_date")
         transactions_data = TransactionSerializer(transactions, many=True).data
         return True, transactions_data
 
@@ -39,6 +39,6 @@ class TransactionRepository:
     def get_my_transactions(user):
         transactions = Transaction.objects.filter(
             Q(from_user=user) | Q(to_user=user)
-        ).order_by("-created_by")
+        ).order_by("-created_date")
         transactions_data = TransactionSerializer(transactions, many=True).data
         return True, transactions_data
