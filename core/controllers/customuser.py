@@ -2,7 +2,7 @@ import logging
 import re
 
 from django.contrib.auth import authenticate
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from rest_framework.decorators import api_view
 
 from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
@@ -156,6 +156,18 @@ class CustomUserController:
             )
 
         success, response = CustomUserRepository.change_password(user, new_password)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    @user_passes_test(lambda u: u.is_superuser)
+    def delete_user(request):
+        post_data = request.data
+        user_id = post_data.get("user_id")
+        success, response = CustomUserRepository.delete_user(user_id)
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

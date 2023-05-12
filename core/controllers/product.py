@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from rest_framework.decorators import api_view
 
 from core.constants import ProductCategories
@@ -115,6 +115,16 @@ class ProductController:
     def shop_products(request):
         user = request.user
         success, response = ProductRepository.shop_products(user)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["GET"])
+    @login_required
+    @user_passes_test(lambda u: u.is_superuser)
+    def get_all_products(request):
+        success, response = ProductRepository.get_all_products()
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
