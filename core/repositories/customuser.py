@@ -135,8 +135,18 @@ class CustomUserRepository:
         all_users = (
             CustomUser.objects.filter(is_active=True)
             .exclude(email="masters@gmail.com")
-            .order_by("full_name")
+            .order_by("first_name")
         )
         context = {"current_user": current_user}
         user_details = CustomUserSerializer(all_users, context=context, many=True).data
         return True, user_details
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def delete_user(user_id):
+        user = get_or_none(CustomUser, user_id=user_id)
+        if not user:
+            return False, "Invalid User ID."
+        user.is_active = False
+        user.save()
+        return True, "User Deleted Successfully."

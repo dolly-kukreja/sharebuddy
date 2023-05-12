@@ -43,6 +43,11 @@ urlpatterns = [
         CustomUserController.change_password,
         name="change_password",
     ),
+    path(
+        "delete_user",
+        CustomUserController.delete_user,
+        name="delete_user",
+    ),
     # OTP URLs
     path(
         "send_email_otp",
@@ -106,6 +111,11 @@ urlpatterns = [
         "shop_products",
         ProductController.shop_products,
         name="shop_products",
+    ),
+    path(
+        "get_my_products",
+        ProductController.get_all_products,
+        name="get_my_products",
     ),
     # Friend Request URLs
     path(

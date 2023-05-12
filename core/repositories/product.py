@@ -124,3 +124,14 @@ class ProductRepository:
         products_queryset = products_queryset.order_by("-created_date")
         products_data = ProductSerializer(products_queryset, many=True).data
         return True, products_data
+
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def get_all_products():
+        all_products = (
+            Product.objects.filter(is_active=True)
+            .order_by("-created_date")
+        )
+        products_data = ProductSerializer(all_products, many=True).data
+        return True, products_data
