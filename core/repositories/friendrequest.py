@@ -118,7 +118,7 @@ class FriendRequestRepository:
         # check if receiver exist
         friend_request_object = FriendRequestModel.objects.filter(
             receiver=receiver_user, status=FriendRequestStatus.PENDING
-        )
+        ).order_by("-created_date")
         if not friend_request_object:
             return True, "No Pending Friend Requests."
         friend_requests_data = FriendRequestSerializer(

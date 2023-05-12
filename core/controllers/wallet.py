@@ -15,3 +15,16 @@ class WalletController:
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["POST"])
+    @login_required
+    def debit_wallet_cash(request):
+        user = request.user
+        amount = request.data.get("amount")
+        if not amount:
+            return BadRequestJSONResponse(response="Invalid Params")
+        success, response = WalletRepository.debit_wallet_cash(user=user, amount=amount)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)

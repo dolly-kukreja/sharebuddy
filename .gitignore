@@ -43,3 +43,5 @@ ENV/
 *.sqlite3
 migrations/
 db.sqlite3
+
+settings.json

@@ -4,9 +4,15 @@ import logging
 from django.db.models import QuerySet
 from datetime import datetime, timedelta
 
-from core.constants import PaymentLinkStatus, PaymentLinkTransactionTypes
+from core.constants import (
+    PaymentLinkStatus,
+    PaymentLinkTransactionTypes,
+    TransactionSourceTarget,
+    TransactionStatus,
+    TransactionType,
+)
 from core.helpers.decorators import handle_unknown_exception
-from core.models import CustomUser, PaymentLink, Quote, generate_unique_id
+from core.models import CustomUser, PaymentLink, Quote, Transaction, generate_unique_id
 from core.services.cashfree import create_payment_link
 
 LOGGER = logging.getLogger(__name__)
@@ -68,6 +74,18 @@ class PaymentLinkRepostitory:
             expiry_date=quote.from_date,
             link_url=payment_link_url,
         )
+        admin_user = CustomUser.objects.filter(email="masters@gmail.com").first()
+        Transaction.objects.create(
+            from_user=quote.customer,
+            to_user=admin_user,
+            quote=quote,
+            amount=payment_amount,
+            ttype=TransactionType.CREDIT,
+            status=TransactionStatus.INITIATED,
+            source=TransactionSourceTarget.BANK,
+            target=TransactionSourceTarget.WALLET,
+            remarks=payment_link,
+        )
         return True, "Payment Link Sent Successfully."
 
     @staticmethod
@@ -86,13 +104,13 @@ class PaymentLinkRepostitory:
         payment_link_object.save()
         from core.repositories.quote import QuoteRepository
 
-        if link_status == PaymentLinkStatus.PAID or link_status == "SUCCESS":
+        if link_status in (PaymentLinkStatus.PAID, "SUCCESS"):
             success, response = QuoteRepository.after_payment_process(
-                payment_link_object.quote, payment_link_object.link_amount
+                payment_link_object=payment_link_object
             )
         elif link_status == PaymentLinkStatus.EXPIRED:
             success, response = QuoteRepository.close_quote_with_failed_payment(
-                payment_link_object.quote
+                payment_link_object=payment_link_object
             )
         if not success:
             return False, response

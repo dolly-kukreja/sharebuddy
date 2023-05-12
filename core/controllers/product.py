@@ -60,9 +60,9 @@ class ProductController:
     @api_view(["GET"])
     @login_required
     @validate_user_details()
-    def get_all_products(request):
+    def get_my_products(request):
         user = request.user
-        success, response = ProductRepository.get_all_products(user)
+        success, response = ProductRepository.get_my_products(user)
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

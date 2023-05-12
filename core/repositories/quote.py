@@ -10,13 +10,15 @@ from core.constants import (
     QuoteExchangeTypes,
     QuoteStatus,
     TransactionSourceTarget,
+    TransactionStatus,
+    TransactionType,
 )
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
 from core.models import CustomUser, Notification, Product, Quote, Transaction, Wallet
+from core.repositories.paymentlink import PaymentLinkRepostitory
 from core.serializers.root_serializers import QuoteSerializer
 from core.services.email import send_email
-from core.repositories.paymentlink import PaymentLinkRepostitory
 
 LOGGER = logging.getLogger(__name__)
 
@@ -282,6 +284,15 @@ class QuoteRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
+    def get_all_quotes():
+        all_quotes = Quote.objects.all().order_by("-created_date")
+        if not all_quotes:
+            return True, "No Quotes placed yet."
+        quotes_data = QuoteSerializer(all_quotes, many=True).data
+        return True, quotes_data
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
     def get_friends_quotes(current_user):
         friends_quotes = current_user.product_owner.all().order_by("-created_date")
         if not friends_quotes:
@@ -442,17 +453,14 @@ class QuoteRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def after_payment_process(quote, payment_amount):
-        admin_user = CustomUser.objects.filter(email="masters@gmail.com").first()
-        admin_wallet = Wallet.objects.get(user=admin_user)
-        admin_wallet.available_balance += payment_amount
+    def after_payment_process(payment_link_object):
+        quote = payment_link_object.quote
+        admin_wallet = Wallet.objects.get(user__email="masters@gmail.com")
+        admin_wallet.available_balance += payment_link_object.payment_amount
         admin_wallet.save()
-        Transaction.objects.create(
-            from_user=quote.customer,
-            to_user=admin_user,
-            quote=quote,
-            amount=payment_amount,
-        )
+        transaction = Transaction.objects.get(remarks=payment_link_object.link_id)
+        transaction.status = TransactionStatus.COMPLETED
+        transaction.save()
         if quote.exchange_type == QuoteExchangeTypes.RENT:
             quote.is_rent_paid = True
             quote.is_deposit_paid = True
@@ -484,10 +492,14 @@ class QuoteRepository:
 
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
-    def close_quote_with_failed_payment(quote):
+    def close_quote_with_failed_payment(payment_link_object):
+        quote = payment_link_object.quote
         quote.is_closed = True
         quote.last_updated_by = quote.customer
         quote.save()
+        transaction = Transaction.objects.get(remarks=payment_link_object.link_id)
+        transaction.status = TransactionStatus.FAILED
+        transaction.save()
         subject = "Closing Quote due to Failed Payment."
         message_for_customer = f"Payment Link expired and you failed to make the payment for product named {quote.product.name}, hence closing the quote here only. \n Thankyou"
         message_for_owner = f"Customer failed to make the payment for your product named {quote.product.name}, hence closing the quote here only. \n Thankyou"
@@ -538,7 +550,10 @@ class QuoteRepository:
                     to_user=quote.owner,
                     quote=quote,
                     amount=payment_amount,
+                    ttype=TransactionType.DEBIT,
+                    status=TransactionStatus.COMPLETED,
                     source=TransactionSourceTarget.WALLET,
+                    target=TransactionSourceTarget.WALLET,
                 )
             subject = "Product has been exchanged."
             message_for_owner = f"Your Product named {quote.product.name} has been exchanged. We have credited your payment, please check you wallet for the same. And do update your details once you receive back your product, so that we can close your quote. We appreciate your time and understanding. \n Thankyou"
@@ -588,9 +603,7 @@ class QuoteRepository:
                     email="masters@gmail.com"
                 ).first()
                 admin_wallet = Wallet.objects.get(user=admin_user)
-                print(admin_wallet.available_balance)
                 admin_wallet.available_balance -= payment_amount
-                print(admin_wallet.available_balance)
                 admin_wallet.save()
                 customer_wallet = Wallet.objects.get(user=quote.customer)
                 customer_wallet.available_balance += payment_amount
@@ -600,7 +613,10 @@ class QuoteRepository:
                     to_user=quote.customer,
                     quote=quote,
                     amount=payment_amount,
+                    ttype=TransactionType.DEBIT,
+                    status=TransactionStatus.COMPLETED,
                     source=TransactionSourceTarget.WALLET,
+                    target=TransactionSourceTarget.WALLET,
                 )
             subject = "Product has been returned."
             message_for_owner = f"Your Product named {quote.product.name} has been returned. We are closing this quote here. We appreciate your time and understanding. \n Thankyou"

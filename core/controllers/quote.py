@@ -1,5 +1,5 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
 from rest_framework.decorators import api_view
-from django.contrib.auth.decorators import login_required
 
 from core.helpers.base import BadRequestJSONResponse, SuccessJSONResponse
 from core.repositories.quote import QuoteRepository
@@ -106,6 +106,16 @@ class QuoteController:
     @login_required
     def get_my_quotes(request):
         success, response = QuoteRepository.get_my_quotes(current_user=request.user)
+        if not success:
+            return BadRequestJSONResponse(message=response)
+        return SuccessJSONResponse(response)
+
+    @staticmethod
+    @api_view(["GET"])
+    @login_required
+    @user_passes_test(lambda u: u.is_superuser)
+    def get_all_quotes(request):
+        success, response = QuoteRepository.get_all_quotes()
         if not success:
             return BadRequestJSONResponse(message=response)
         return SuccessJSONResponse(response)

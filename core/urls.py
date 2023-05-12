@@ -11,6 +11,7 @@ from core.views import (
     PaymentLinkController,
     MessageController,
     WalletController,
+    TransactionController,
 )
 
 urlpatterns = [
@@ -87,9 +88,9 @@ urlpatterns = [
         name="get_product_details",
     ),
     path(
-        "get_all_products",
-        ProductController.get_all_products,
-        name="get_all_products",
+        "get_my_products",
+        ProductController.get_my_products,
+        name="get_my_products",
     ),
     path(
         "update_product",
@@ -171,6 +172,11 @@ urlpatterns = [
         name="get_my_quotes",
     ),
     path(
+        "get_my_quotes",
+        QuoteController.get_all_quotes,
+        name="get_my_quotes",
+    ),
+    path(
         "get_friends_quotes",
         QuoteController.get_friends_quotes,
         name="get_friends_quotes",
@@ -222,5 +228,21 @@ urlpatterns = [
         "get_wallet_balance",
         WalletController.get_wallet_balance,
         name="get_wallet_balance",
+    ),
+    path(
+        "debit_wallet_cash",
+        WalletController.debit_wallet_cash,
+        name="debit_wallet_cash",
+    ),
+    ## Transaction URLs
+    path(
+        "get_all_transactions",
+        TransactionController.get_all_transaction,
+        name="get_all_transactions",
+    ),
+    path(
+        "get_my_transactions",
+        TransactionController.get_my_transactions,
+        name="get_my_transactions",
     ),
 ]

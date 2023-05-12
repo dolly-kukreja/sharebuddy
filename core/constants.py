@@ -82,3 +82,10 @@ class TransactionType:
 class TransactionSourceTarget:
     WALLET = "WALLET"
     BANK = "BANK"
+
+
+class TransactionStatus:
+    INITIATED = "INITIATED"
+    IN_PROCESS = "IN_PROCESS"
+    FAILED = "FAILED"
+    COMPLETED = "COMPLETED"
