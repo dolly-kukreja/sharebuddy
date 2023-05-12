@@ -172,9 +172,9 @@ urlpatterns = [
         name="get_my_quotes",
     ),
     path(
-        "get_my_quotes",
+        "get_all_quotes",
         QuoteController.get_all_quotes,
-        name="get_my_quotes",
+        name="get_all_quotes",
     ),
     path(
         "get_friends_quotes",
@@ -237,7 +237,7 @@ urlpatterns = [
     ## Transaction URLs
     path(
         "get_all_transactions",
-        TransactionController.get_all_transaction,
+        TransactionController.get_all_transactions,
         name="get_all_transactions",
     ),
     path(

@@ -7,7 +7,7 @@ from core.repositories.transaction import TransactionRepository
 
 class TransactionController:
     @staticmethod
-    @api_view(["POST"])
+    @api_view(["GET"])
     @login_required
     @user_passes_test(lambda u: u.is_superuser)
     def get_all_transactions(request):
@@ -17,7 +17,7 @@ class TransactionController:
         return SuccessJSONResponse(response)
 
     @staticmethod
-    @api_view(["POST"])
+    @api_view(["GET"])
     @login_required
     def get_my_transactions(request):
         success, response = TransactionRepository.get_my_transactions(request.user)
