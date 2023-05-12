@@ -55,7 +55,7 @@ class ProductRepository:
     @handle_unknown_exception(logger=LOGGER)
     def get_my_products(user):
         products = Product.objects.filter(user=user, is_active=True).order_by(
-            "-created_by"
+            "-created_date"
         )
         if not products:
             return True, "No Products Found."
