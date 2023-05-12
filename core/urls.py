@@ -88,7 +88,7 @@ urlpatterns = [
         name="get_product_details",
     ),
     path(
-        "get_my_products",
+        "get_all_products",
         ProductController.get_my_products,
         name="get_my_products",
     ),
