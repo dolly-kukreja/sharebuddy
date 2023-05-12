@@ -3,10 +3,11 @@ import logging
 
 from django.core.files import File
 from django.db.models import QuerySet
+from core.constants import NotificationType
 
 from core.helpers.decorators import handle_unknown_exception
 from core.helpers.query_search import get_or_none
-from core.models import CustomUser, Friends, Product
+from core.models import CustomUser, Friends, Notification, Product
 from core.serializers.root_serializers import ProductSerializer
 
 LOGGER = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class ProductRepository:
                 is_active=True,
             )
             new_product.save()
+            success, response = ProductRepository.notify_all_friends(new_product, "add")
             return True, "Product Added successfully."
         except Exception as ex:
             return False, str(ex)
@@ -106,6 +108,7 @@ class ProductRepository:
         product.is_available = False
         product.is_active = False
         product.save()
+        success, response = ProductRepository.notify_all_friends(product, "delete")
         return True, "Product Deleted Successfully."
 
     @staticmethod
@@ -125,13 +128,26 @@ class ProductRepository:
         products_data = ProductSerializer(products_queryset, many=True).data
         return True, products_data
 
-
     @staticmethod
     @handle_unknown_exception(logger=LOGGER)
     def get_all_products():
-        all_products = (
-            Product.objects.filter(is_active=True)
-            .order_by("-created_date")
-        )
+        all_products = Product.objects.filter(is_active=True).order_by("-created_date")
         products_data = ProductSerializer(all_products, many=True).data
         return True, products_data
+
+    @staticmethod
+    @handle_unknown_exception(logger=LOGGER)
+    def notify_all_friends(product, action):
+        friend_object = Friends.objects.filter(user=product.user).first()
+        if not friend_object:
+            return True, "No Friends to Notify."
+        friends_id_list = literal_eval(friend_object.friends_list)
+        friends = CustomUser.objects.filter(user_id__in=friends_id_list)
+        for friend in friends:
+            Notification.objects.create(
+                user=friend,
+                text=f"Product has been {action}ed by your friend {product.user.full_name}.",
+                type=NotificationType.PRODUCT,
+                type_id=product.product_id,
+            )
+        return True, "Notification Sent"
