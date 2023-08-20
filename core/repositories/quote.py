@@ -18,7 +18,7 @@ from core.helpers.query_search import get_or_none
 from core.models import CustomUser, Notification, Product, Quote, Transaction, Wallet
 from core.repositories.paymentlink import PaymentLinkRepostitory
 from core.serializers.root_serializers import QuoteSerializer
-from core.services.email import send_email
+from core.tasks import send_email_task
 
 LOGGER = logging.getLogger(__name__)
 
@@ -79,13 +79,10 @@ class QuoteRepository:
         email = product.user.email
         subject = "New Quote Placed"
         message = f"New Quote has been placed by {customer.full_name} for your product named {product.name}. Please login and check for more details."
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message,
             receivers=[email],
-        )
-        LOGGER.info(
-            "Quote Placed Email success and response: %s, %s", success, response
         )
 
         Notification.objects.create(
@@ -195,13 +192,10 @@ class QuoteRepository:
                 user_to_be_notified = quote.customer
             subject = "Quote has been Approved."
             message = f"Quote has been Approved by {current_user.full_name} for product named {quote.product.name}. Please login and check for more details."
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message,
                 receivers=[user_to_be_notified.email],
-            )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
             )
 
             Notification.objects.create(
@@ -259,13 +253,10 @@ class QuoteRepository:
             user_to_be_notified = quote.customer
         subject = "Quote has been Rejected."
         message = f"Quote has been Rejected by {current_user.full_name} for product named {quote.product.name}. Please login and check for more details."
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message,
             receivers=[user_to_be_notified.email],
-        )
-        LOGGER.info(
-            "Quote Rejected Email success and response: %s, %s", success, response
         )
 
         Notification.objects.create(
@@ -377,41 +368,29 @@ class QuoteRepository:
             subject = "Quote has been approved."
             message_for_customer = f"Congratulations!!! \n Your Quote has been Approved for product named {quote.product.name}. As per your quote, you guys have decided to meet at {quote.meetup_point}. We request you to meet at decided meetup point and update about the same on our website, so that we can process your quote further. If you fail to update your quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. Hence, Please share the latest updates with us. We appreciate your time and understanding. \n Thankyou"
             message_for_owner = f"Quote has been Approved for your product named {quote.product.name}. As per your quote, you guys have decided to meet at {quote.meetup_point}. We request you to meet at decided meetup point and update about the same on our website, so that we can process your quote further. If you fail to update the quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. Hence, Please share the latest updates with us. We appreciate your time and understanding. \n Thankyou"
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_customer,
                 receivers=[quote.customer.email],
             )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
-            )
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_owner,
                 receivers=[quote.owner.email],
-            )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
             )
         elif quote.exchange_type == QuoteExchangeTypes.DEPOSIT:
             subject = "Quote has been approved."
             message_for_customer = f"Congratulations!!! \n Your Quote has been Approved for product named {quote.product.name}. As per your quote, you guys has decided to go with the Deposit exchange type. So, you will get the payment link soon over the mail, please make the payment and then we'll proceed your quote fruther for sharing. If you fail to update the quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. We appreciate your time and understanding. \n Thankyou"
             message_for_owner = f"Quote has been Approved for your product named {quote.product.name}. As per your quote, you guys has decided to go with the Depos``it exchange type. Hence, We have shared the payment link with the customer for Payment and will update you the same once customer has made the payment. But you'll get your payment once product is shared, until then your payment is safe with us. And once customer has made the payment, you can share your product with the customer. We appreciate your time and understanding. \n Thankyou"
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_customer,
                 receivers=[quote.customer.email],
             )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
-            )
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_owner,
                 receivers=[quote.owner.email],
-            )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
             )
             success, response = PaymentLinkRepostitory.send_payment_link(
                 payment_type=PaymentLinkTransactionTypes.DEPOSIT,
@@ -425,21 +404,15 @@ class QuoteRepository:
             subject = "Quote has been approved."
             message_for_customer = f"Congratulations!!! \n Your Quote has been Approved for product named {quote.product.name}. As per your quote, you guys has decided to go with the Rent exchange type. So, you will get the payment link soon over the mail, please make the payment and then we'll proceed your quote fruther for sharing. If you fail to update the quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. We appreciate your time and understanding. \n Thankyou"
             message_for_owner = f"Quote has been Approved for your product named {quote.product.name}. As per your quote, you guys has decided to go with the Rent exchange type. Hence, We have shared the payment link with the customer for Payment and will update you the same once customer has made the payment. And once customer has made the payment, you can share your product with the customer. We appreciate your time and understanding. \n Thankyou"
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_customer,
                 receivers=[quote.customer.email],
             )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
-            )
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_owner,
                 receivers=[quote.owner.email],
-            )
-            LOGGER.info(
-                "Quote Approved Email success and response: %s, %s", success, response
             )
             success, response = PaymentLinkRepostitory.send_payment_link(
                 payment_type=PaymentLinkTransactionTypes.RENT,
@@ -474,21 +447,15 @@ class QuoteRepository:
         subject = "Recieved Payment."
         message_for_customer = f"We received your payment for {quote.product.name} and has informed the same to owner, so now you guys can exchange the product at the decided meet-up point. Once Exchanged, please update the same on the webiste, so that we can process your quote further. If you fail to update your quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. Hence, Please share the latest updates with us. We appreciate your time and understanding. \n Thankyou"
         message_for_owner = f"We have received the payment from customer for your product named {quote.product.name}. So, now you guys can exchange the product at the decided meet-up point. Once Exchanged, please update the same on the webiste, so that we can process your quote further.  And you'll get your payment once product is shared, until then your payment is safe with us. If you fail to update your quote before your start_date, we'll have to unfortunately close your quote and then no payment will be credited or debited. Hence, Please share the latest updates with us. We appreciate your time and understanding. \n Thankyou"
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message_for_customer,
             receivers=[quote.customer.email],
         )
-        LOGGER.info(
-            "Payment Done Email success and response: %s, %s", success, response
-        )
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message_for_owner,
             receivers=[quote.owner.email],
-        )
-        LOGGER.info(
-            "Payment Done Email success and response: %s, %s", success, response
         )
         return True, "Details Updated Successfully."
 
@@ -505,21 +472,15 @@ class QuoteRepository:
         subject = "Closing Quote due to Failed Payment."
         message_for_customer = f"Payment Link expired and you failed to make the payment for product named {quote.product.name}, hence closing the quote here only. \n Thankyou"
         message_for_owner = f"Customer failed to make the payment for your product named {quote.product.name}, hence closing the quote here only. \n Thankyou"
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message_for_customer,
             receivers=[quote.customer.email],
         )
-        LOGGER.info(
-            "Quote Closed Email success and response: %s, %s", success, response
-        )
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message_for_owner,
             receivers=[quote.owner.email],
-        )
-        LOGGER.info(
-            "Quote Closed Email success and response: %s, %s", success, response
         )
         return True, "Details Updated Successfully."
 
@@ -560,25 +521,15 @@ class QuoteRepository:
             subject = "Product has been exchanged."
             message_for_owner = f"Your Product named {quote.product.name} has been exchanged. We have credited your payment, please check you wallet for the same. And do update your details once you receive back your product, so that we can close your quote. We appreciate your time and understanding. \n Thankyou"
             message_for_customer = f"You have received the Product named {quote.product.name}. Please do update your details once you return back the product, so that we can close your quote and disburse your payment. We appreciate your time and understanding. \n Thankyou"
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_customer,
                 receivers=[quote.customer],
             )
-            LOGGER.info(
-                "Product Exchanged Email success and response: %s, %s",
-                success,
-                response,
-            )
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_owner,
                 receivers=[quote.owner],
-            )
-            LOGGER.info(
-                "Product Exchanged Email success and response: %s, %s",
-                success,
-                response,
             )
         quote.save()
         return True, "Product Exchanged Successfully."
@@ -623,21 +574,15 @@ class QuoteRepository:
             subject = "Product has been returned."
             message_for_owner = f"Your Product named {quote.product.name} has been returned. We are closing this quote here. We appreciate your time and understanding. \n Thankyou"
             message_for_customer = f"You returned the Product named {quote.product.name}. We have credited your deposit amount, please check your wallet. We appreciate your time and understanding. \n Thankyou"
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_customer,
                 receivers=[quote.customer],
             )
-            LOGGER.info(
-                "Quote Closed Email success and response: %s, %s", success, response
-            )
-            success, response = send_email(
+            send_email_task.delay(
                 subject=subject,
                 message=message_for_owner,
                 receivers=[quote.owner],
-            )
-            LOGGER.info(
-                "Quote Closed Email success and response: %s, %s", success, response
             )
         quote.save()
         return True, "Quote Closed Successfully."

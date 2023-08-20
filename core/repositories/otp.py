@@ -7,8 +7,8 @@ from core.constants import OTPKeyNameTypes
 from core.helpers.base import random_string_generator
 from core.helpers.decorators import handle_unknown_exception
 from core.models import OneTimePassword
-from core.services.email import send_email
-from core.services.sms import send_sms
+from core.tasks import send_email_task
+from core.tasks import send_sms_task
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,18 +39,18 @@ class OneTimePasswordRepository:
         code = random_string_generator(length=6, alphabets=True)
         message = f"{code} is your email verification code for ShareBuddy."
         expiry_date = timezone.now() + relativedelta(minutes=10)
-        otp = OneTimePassword.objects.create(
+        OneTimePassword.objects.create(
             key_name=OTPKeyNameTypes.EMAIL,
             key_value=email,
             password=code,
             expiry_date=expiry_date,
         )
-        success, response = send_email(
+        send_email_task.delay(
             subject=subject,
             message=message,
             receivers=[email],
         )
-        return success, response
+        return True, "OTP sent successfully."
 
     @staticmethod
     def send_sms_otp(user):
@@ -58,17 +58,17 @@ class OneTimePasswordRepository:
         code = random_string_generator(length=6, alphabets=True)
         message = f"{code} is your mobile verification code for ShareBuddy."
         expiry_date = timezone.now() + relativedelta(minutes=10)
-        otp = OneTimePassword.objects.create(
+        OneTimePassword.objects.create(
             key_name=OTPKeyNameTypes.MOBILE,
             key_value=mobile_number,
             password=code,
             expiry_date=expiry_date,
         )
-        success, response = send_sms(
+        send_sms_task.delay(
             body=message,
             to_=mobile_number,
         )
-        return success, response
+        return True, "OTP sent successfully."
 
     @staticmethod
     def verify_email_otp(user, otp):
