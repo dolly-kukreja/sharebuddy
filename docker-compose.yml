@@ -1,0 +1,47 @@
+version: '3.5'
+
+services:
+
+  redis: 
+    image: redis:5.0-alpine
+    ports: 
+      - "6379:6379"
+    volumes:
+      - ./db:/data
+
+  web:
+    build: 
+      context: .
+      dockerfile: compose/Dockerfile
+    image: sharebuddy_backend
+    command: python manage.py runserver
+    restart: on-failure:10
+    volumes:
+      - .:/code
+    ports:
+      - "9020:8080"
+    depends_on:
+      - redis
+    # env_file:
+    #   - ./.envs/.development/.django
+    #   - ./.envs/.development/.postgres
+    # environment:
+    #   - WAIT_HOSTS= postgres:5432
+
+  celery:
+    image: sharebuddy_backend
+    command: python -m celery -A sharebuddy_testing
+    ports:
+      - "6000:6000"
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    # env_file:
+    #   - ./.envs/.development/.django
+    #   - ./.envs/.development/.postgres
+    # environment:
+    #   - WAIT_HOSTS= postgres:5432, redis:6379, rabbitmq:5672
+
+
+    
